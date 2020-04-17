@@ -1,0 +1,14 @@
+version: '3.7'
+services:
+  jupyter:
+    image: analytics/jupyter:1
+    build:
+      context: jupyter
+      dockerfile: Dockerfile
+    environment:
+      - PORT=8888
+    ports:
+      - 9999:8888
+    volumes:
+      - ${PWD}:/transfer
+    
