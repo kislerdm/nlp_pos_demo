@@ -33,31 +33,33 @@ if __name__ == "__main__":
      
     t00 = time.time()
     
-    logs.send("Read corpus.")
+    logs.send("Read corpus.", is_error=False)
     t0 = time.time()
     georgetown_corpus = build_corpus()
-    logs.send(f"Done. Elapsed time: {round(time.time() - t0, 2)} sec.")
+    logs.send(f"Done. Elapsed time: {round(time.time() - t0, 2)} sec.",
+              is_error=False)
     
-    logs.send("Prepare tags dictionary.")
+    logs.send("Prepare tags dictionary.", is_error=False)
     tag_dictionary = georgetown_corpus.make_tag_dictionary('upos')
-    logs.send("Done.")
+    logs.send("Done.", is_error=False)
     
-    logs.send("Read pretrained model.")
+    logs.send("Read pretrained model.", is_error=False)
     t0 = time.time()
     tagger = SequenceTagger.load('pos-fast')
-    logs.send(f"Done. Elapsed time: {round(time.time() - t0, 2)} sec.")
+    logs.send(f"Done. Elapsed time: {round(time.time() - t0, 2)} sec.", 
+              is_error=False)
     
-    logs.send("Adjust model params.")
+    logs.send("Adjust model params.", is_error=False)
     tagger.tag_dictionary = tag_dictionary
     tagger.tag_type = "upos"
-    logs.send("Done.")    
+    logs.send("Done.", is_error=False)    
 
-    logs.send("Set trainer.")
+    logs.send("Set trainer.", is_error=False)
     trainer = ModelTrainer(tagger,
                            georgetown_corpus)
-    logs.send("Done.")
+    logs.send("Done.", is_error=False)
 
-    logs.send("Train.")
+    logs.send("Train.", is_error=False)
     t0 = time.time()
     trainer.train("/tmp/",
                   learning_rate=0.1,
@@ -69,10 +71,12 @@ if __name__ == "__main__":
                   monitor_train=True,
                   monitor_test=True, 
                   checkpoint=True)
-    logs.send(f"Done. Elapsed time: {round(time.time() - t0, 2)} sec.")
+    logs.send(f"Done. Elapsed time: {round(time.time() - t0, 2)} sec.",
+              is_error=False)
 
-    logs.send("Save model.")
+    logs.send("Save model.", is_error=False)
     t0 = time.time()
     tagger.save(f"{DIR}/model.pt")
     
-    logs.send(f"Completed. Elapsed time: {round(time.time() - t00, 2)} sec.")
+    logs.send(f"Completed. Elapsed time: {round(time.time() - t00, 2)} sec.",
+              is_error=False)
