@@ -8,12 +8,15 @@ from flair.models import SequenceTagger
 from flair.trainers import ModelTrainer
 import time
 from logger import getLogger
+import sys
+import warnings
+warnings.filterwarnings("ignore")
 
 
 # fix required for flair
 torch.__version__ = '1.4.0'
 
-DIR = pathlib.Path(__file__).parent
+DIR = pathlib.Path(__file__).absolute().parent
 
 BUCKET_DATA = f"{DIR}/../../data/UD_English-GUM"
 FILE_TRAIN = f"{BUCKET_DATA}/en_gum-ud-train.conllu"
@@ -35,7 +38,10 @@ if __name__ == "__main__":
     
     logs.send("Read corpus.", is_error=False)
     t0 = time.time()
-    georgetown_corpus = build_corpus()
+    try:
+        georgetown_corpus = build_corpus()
+    except Exception as ex:
+        logs.send(f"Reading error. {ex}")
     logs.send(f"Done. Elapsed time: {round(time.time() - t0, 2)} sec.",
               is_error=False)
     
@@ -43,16 +49,28 @@ if __name__ == "__main__":
     tag_dictionary = georgetown_corpus.make_tag_dictionary('upos')
     logs.send("Done.", is_error=False)
     
-    logs.send("Read pretrained model.", is_error=False)
+    # logs.send("Read pretrained model.", is_error=False)
+    logs.send("Build a model.", is_error=False)
     t0 = time.time()
-    tagger = SequenceTagger.load('pos-fast')
+    try:
+        embeddings = StackedEmbeddings([
+            WordEmbeddings('glove'),
+        ])
+        tagger = SequenceTagger(hidden_size=256,
+                                embeddings=embeddings,
+                                tag_dictionary=tag_dictionary,
+                                tag_type="upos",
+                                use_crf=True)
+        # tagger = SequenceTagger.load('pos-fast')
+    except Exception as ex:
+        logs.send(f"Tagger loading error. {ex}")
     logs.send(f"Done. Elapsed time: {round(time.time() - t0, 2)} sec.", 
               is_error=False)
     
-    logs.send("Adjust model params.", is_error=False)
-    tagger.tag_dictionary = tag_dictionary
-    tagger.tag_type = "upos"
-    logs.send("Done.", is_error=False)    
+    # logs.send("Adjust model params.", is_error=False)
+    # tagger.tag_dictionary = tag_dictionary
+    # tagger.tag_type = "upos"
+    # logs.send("Done.", is_error=False)    
 
     logs.send("Set trainer.", is_error=False)
     trainer = ModelTrainer(tagger,
