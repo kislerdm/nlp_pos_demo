@@ -47,30 +47,35 @@ if __name__ == "__main__":
     
     logs.send("Prepare tags dictionary.", is_error=False)
     tag_dictionary = georgetown_corpus.make_tag_dictionary('upos')
+    tag_dictionary_size = len(tag_dictionary)
     logs.send("Done.", is_error=False)
     
-    # logs.send("Read pretrained model.", is_error=False)
-    logs.send("Build a model.", is_error=False)
+    logs.send("Read pretrained model.", is_error=False)
     t0 = time.time()
     try:
-        embeddings = StackedEmbeddings([
-            WordEmbeddings('glove'),
-        ])
-        tagger = SequenceTagger(hidden_size=256,
-                                embeddings=embeddings,
-                                tag_dictionary=tag_dictionary,
-                                tag_type="upos",
-                                use_crf=True)
-        # tagger = SequenceTagger.load('pos-fast')
+        tagger = SequenceTagger.load('pos-fast')
     except Exception as ex:
         logs.send(f"Tagger loading error. {ex}")
     logs.send(f"Done. Elapsed time: {round(time.time() - t0, 2)} sec.", 
               is_error=False)
     
-    # logs.send("Adjust model params.", is_error=False)
-    # tagger.tag_dictionary = tag_dictionary
-    # tagger.tag_type = "upos"
-    # logs.send("Done.", is_error=False)    
+    logs.send("Adjust model params.", is_error=False)
+    # change the dictionary tags
+    tagger.tag_dictionary = tag_dictionary
+    # minor adjustmend of the PoS -> Universal PoS
+    tagger.tag_type = "upos"
+    # size of the tagset (required to )
+    tagger.tagset_size = tag_dictionary_size
+    # freeze all layers
+    for param in tagger.parameters():
+        param.requires_grad = False
+    # replace and (by default) unfreeze the output layer
+    tagger.linear = torch.nn.Linear(512, tag_dictionary_size)
+    # reset transitions so they aligned in size with new tagset
+    tagger.transitions = torch.nn.Parameter(
+        torch.randn(tag_dictionary_size, tag_dictionary_size)
+    )
+    logs.send("Done.", is_error=False)    
 
     logs.send("Set trainer.", is_error=False)
     trainer = ModelTrainer(tagger,
