@@ -1,0 +1,3 @@
+[submodule "data"]
+	path = data/UD_English-GUM
+	url = https://github.com/UniversalDependencies/UD_English-GUM.git
