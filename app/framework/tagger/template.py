@@ -1,27 +1,52 @@
 # Dmitry Kisler © 2020-present
 # www.dkisler.com
 
-from typing import List, Tuple
+from typing import List, Tuple, Any, NamedTuple, Union
 from abc import ABC, abstractmethod
 from collections import namedtuple
-import numpy
+
+
+class Corpus():
+    def __init__(self, 
+                 train: str,
+                 dev: str = None):
+        """Corpus class."""
+        self.train = train
+        self.dev = dev
+    
+    @property
+    def train(self):
+        return self.train
+    
+    @property
+    def dev(self):
+        return self.dev    
 
 
 class Model(ABC):
-    """"Model definition class"""
-    model_eval = namedtuple('model_eval', ['accuracy'])
+    model_eval = namedtuple("model_eval", ["accuracy"])
 
-    def __init__(self,
-                 model=None):
-        self.model = model
-
-    @abstractmethod
-    def _model_definition(self,
-                          config: None) -> Any:
-        """Function to define and compile the model.
+    def __init__(self, config: dict = None, path: str = None):
+        """"Model definition class
         
         Args:
-          config: Model's hyperparameters.
+          config: Model config dictionary.
+          path: Path to pre-trained model.
+        
+        Raises:
+          IOError if model file doesn't exist.
+        """
+        if path:
+            try:
+                self.model = self.load(path)
+            except IOError as ex:
+                raise ex
+        else:
+            self.model = self._model_definition()
+
+    @abstractmethod
+    def _model_definition(self) -> Any:
+        """Function to define and compile the model.
         
         Returns:
           Model object.
@@ -29,15 +54,15 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def train(self,
-              X: pd.DataFrame,
-              y: pd.Series) -> NamedTuple('model_eval',
-                                          accuracy=float):
+    def train(self, 
+              corpus: Corpus,
+              evalute: bool = True) -> Union[None,
+                                             NamedTuple("model_eval", 
+                                                      accuracy=float)]:
         """Train method.
 
         Args:
-          X: Features values.
-          y: Target column values.
+          corpus: Corpus to train model.
 
         Returns: 
           namedtuple with metrics values: 
@@ -46,23 +71,18 @@ class Model(ABC):
         if self.model is None:
             self._model_definition()
 
-        # train step
+        # train model
 
-        # eval step
-        y_pred = None
-        model_eval = self.score(y_true=y, y_pred=y_pred)
-        return model_eval
+        return None
 
-    @classmethod
-    def score(cls,
-              y_true: numpy.array,
-              y_pred: numpy.array) -> NamedTuple('model_eval',
-                                                 accuracy=float):
+    @abstractmethod
+    def evaluate(self, 
+                 corpus: Corpus = None) -> NamedTuple("model_eval", 
+                                                      accuracy=float):
         """Model metrics evaluation.
 
         Args:
-          y_true: True tag values vector.
-          y_pred: Predicted tag values vector.
+          corpus: Corpus to evaluate model.
 
         Returns:
           namedtuple with metrics values: 
@@ -89,7 +109,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def tag(self, X: List[List[str]]) -> List[List[Tuple[str]]]:
+    def predict(self, sentenses: List[List[str]]) -> List[List[Tuple[str]]]:
         """Method to tag tokens from the list of sentences.
 
         Args:

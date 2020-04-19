@@ -1,12 +1,10 @@
 # Dmitry Kisler © 2020-present
 # www.dkisler.com
 
-import os
-import pandas
+from typing import Tuple, List, Union
 import functools
 from io import StringIO
-from typing import Tuple, List, Union
-import pickle
+import pandas
 
 
 def parser_conllu_to_dict(document: str,
@@ -102,29 +100,23 @@ def parser_conllu_to_dict(document: str,
     return output
 
 
-def corpus_parser(path: str) -> Union[Tuple[List[dict], None],
-                                      Tuple[list, str]]:
+def corpus_parser(document: str) -> Union[Tuple[List[dict], None],
+                                          Tuple[list, str]]:
     """Function to read corpus from conllu corpus file.
     
     Args:
-      path: File path.
+      corpus: Corpus as string.
     
     Returns:
       List of token trees with error string in case of any.
     """
-    if not os.path.isfile(path):
-        return [], f"File {path} doesn't exist."
-    
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            document = f.read()
         return parser_conllu_to_dict(document,
                                      meta_description={
                                          "tags": ["sent_id", "text", "s_tape"],
                                          "delimiter": "=",
-                                         }
+                                     }
                                      ), None
     except Exception as ex:
         return [], ex
-
 

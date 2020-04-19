@@ -84,6 +84,7 @@ if __name__ == "__main__":
 
     logs.send("Train.", is_error=False)
     t0 = time.time()
+    
     trainer.train("/tmp/",
                   learning_rate=0.1,
                   mini_batch_size=32,
@@ -94,6 +95,7 @@ if __name__ == "__main__":
                   monitor_train=True,
                   monitor_test=True, 
                   checkpoint=True)
+    
     logs.send(f"Done. Elapsed time: {round(time.time() - t0, 2)} sec.",
               is_error=False)
 
