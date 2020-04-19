@@ -6,14 +6,23 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 
 
-class Corpus():
+class Corpus(ABC):
     def __init__(self, 
                  train: str,
                  dev: str = None):
         """Corpus class."""
-        self.train = train
-        self.dev = dev
+        self.train = self._build_corpus(train)
+        self.dev = self._build_corpus(dev)
     
+    @abstractmethod
+    def _build_corpus(self, document: str) -> Any:
+        """Function to define corpus
+        
+        Args:
+          document: String document.
+        """
+        return 
+        
     @property
     def train(self):
         return self.train
@@ -23,14 +32,27 @@ class Corpus():
         return self.dev    
 
 
-class Model(ABC):
-    model_eval = namedtuple("model_eval", ["accuracy"])
+def make_tokens(document: str) -> Any:
+    """Tokenizer function.
+    
+    Args:
+      document: String document.
+    
+    Return:
+      List of tokens.  
+    """
+    pass
 
-    def __init__(self, config: dict = None, path: str = None):
+
+class Model(ABC):
+    model_eval = namedtuple("model_eval", ["dataset", 
+                                           "accuracy"])
+
+    def __init__(self, 
+                 path: str = None):
         """"Model definition class
         
         Args:
-          config: Model config dictionary.
           path: Path to pre-trained model.
         
         Raises:
@@ -57,8 +79,9 @@ class Model(ABC):
     def train(self, 
               corpus: Corpus,
               evalute: bool = True) -> Union[None,
-                                             NamedTuple("model_eval", 
-                                                      accuracy=float)]:
+                                             List[NamedTuple("model_eval", 
+                                                             dataset=str,
+                                                             accuracy=float)]]:
         """Train method.
 
         Args:
@@ -72,13 +95,15 @@ class Model(ABC):
             self._model_definition()
 
         # train model
-
+        if evalute:
+            return self.evaluate(corpus)
         return None
 
     @abstractmethod
     def evaluate(self, 
-                 corpus: Corpus = None) -> NamedTuple("model_eval", 
-                                                      accuracy=float):
+                 corpus: Corpus = None) -> List[NamedTuple("model_eval", 
+                                                           dataset=str,
+                                                           accuracy=float)]:
         """Model metrics evaluation.
 
         Args:
@@ -89,6 +114,18 @@ class Model(ABC):
               "accuracy": float
         """
         return None
+      
+    @abstractmethod
+    def predict(self, 
+                sentenses: List[str]) -> List[List[str]]:
+        """Method to tag tokens from the list of sentences.
+
+        Args:
+          sentenses: Sentences.
+        """
+        if self.model is None:
+            return None
+        pass
 
     @abstractmethod
     def save(self, path: str):
@@ -108,13 +145,3 @@ class Model(ABC):
         """
         pass
 
-    @abstractmethod
-    def predict(self, sentenses: List[List[str]]) -> List[List[Tuple[str]]]:
-        """Method to tag tokens from the list of sentences.
-
-        Args:
-          X: Features values.
-        """
-        if self.model is None:
-            return None
-        pass
