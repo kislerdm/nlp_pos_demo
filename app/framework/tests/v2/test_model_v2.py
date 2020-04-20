@@ -25,9 +25,7 @@ CLASS_MODEL_METHODS = set(['_model_definition',
 
 CLASS_MODEL_EVAL_ELEMENTS = ['dataset', 'accuracy']
 
-CLASS_CORPUS_METHODS = set(['_build_corpus'])
-
-CLASS_CORPUS_ATTS = set(['train', 'dev'])
+CLASS_CORPUS_METHODS = set(['_build_corpus', 'train', 'dev'])
 
 DATASET_TRAIN = """# newdoc id = GUM_academic_art
 # sent_id = GUM_academic_art-1
@@ -93,18 +91,11 @@ def test_module_miss_functions() -> None:
     return
   
 
-def test_class_corpus_miss_methods() -> None:
-    model_members = inspect.getmembers(module.Model)
-    missing = CLASS_CORPUS_METHODS.difference(set(model_members))
+def test_class_corpus_miss_methods_attrs() -> None:
+    members = module.Corpus("").__dir__()
+    missing = CLASS_CORPUS_METHODS.difference(set(members))
     assert not missing, f"""Class Corpus Method(s) '{"', '".join(missing)}' is(are) missing."""
     return
-  
-
-def test_class_corpus_miss_atts() -> None:
-    for i in CLASS_CORPUS_ATTS:
-        assert getattr(module.Corpus(""), i), \
-            f"Class Corpus is missing attribute {i}."
-    return  
   
 
 def test_corpus_generation():
