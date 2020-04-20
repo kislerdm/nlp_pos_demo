@@ -7,13 +7,12 @@ import time
 import importlib
 import argparse
 import warnings
-from framework.utils.logger import getLogger
-from framework.utils.io_fs import corpus_reader
+from tagger_framework.utils.logger import getLogger
 warnings.simplefilter(action='ignore', 
                       category=FutureWarning)
 
 
-MODEL_PKG_NAME = "framework.tagger.pos"
+MODEL_PKG_NAME = "tagger_framework.tagger.pos"
 MODEL_VERSION = os.getenv("MODEL_VERSION", "v1")
 
 BUCKET_DATA = os.getenv("BUCKET_DATA", "/data")
@@ -33,17 +32,22 @@ def get_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description="Model trainer.")
     
-    parser.add_argument('--path_train',
+    parser.add_argument('--path-train',
                         help="Path to train corpus.",
                         type=str,
                         default=None,
                         required=True)
-    parser.add_argument('--path_dev',
+    parser.add_argument('--path-dev',
                         help="Path to dev corpus.",
                         type=str,
                         default=None,
                         required=False)
-    parser.add_argument('--path_model',
+    parser.add_argument('--path-test',
+                        help="Path to test corpus.",
+                        type=str,
+                        default=None,
+                        required=False)
+    parser.add_argument('--path-model',
                         help="Path to pre-trained model.",
                         type=str,
                         default=None,
@@ -77,29 +81,21 @@ if __name__ == "__main__":
                   lineno=logs.get_line(),
                   kill=True)
     
-    str_train, err = corpus_reader(path_data_train)
-    if err:
-        logs.send(f"Error reading train data set {path_data_train}.\nError: {err}",
-                  lineno=logs.get_line(),
-                  kill=True)
-
     path_data_dev = None
     if args.path_dev:
         path_data_dev = f"{BUCKET_DATA}/{args.path_dev}"
         path_data_dev = path_data_dev if os.path.isfile(path_data_dev) else None
-        
-        if path_data_dev:
-            str_dev, err = corpus_reader(path_data_dev)
-            if err:
-                logs.send(f"Error reading dev data set {path_data_train}.\nError: {err}",
-                          lineno=logs.get_line(),
-                          is_error=False,
-                          kill=False)
+    
+    path_data_test = None
+    if args.path_test:
+        path_data_test = f"{BUCKET_DATA}/{args.path_test}"
+        path_data_test = path_data_test if os.path.isfile(path_data_test) else None
     
     # build corpus to train and eval model
     try:
-        corpus = model_module.Corpus(train=str_train,
-                                     dev=str_dev)
+        corpus = model_module.Corpus(path_train=path_data_train,
+                                     path_dev=path_data_dev,
+                                     path_test=path_data_test)
     except Exception as ex:
         logs.send(f"Corpus extraction error.\nError: {ex}",
                   lineno=logs.get_line(),

@@ -18,7 +18,7 @@ WORKDIR /app
 COPY service/train .
 COPY framework framework
 
-ARG PATH_MISC="framework/tagger/pos/${MODEL_VERSION}/install_dependencies.sh"
+ARG PATH_MISC="framework/tagger_framework/tagger/pos/${MODEL_VERSION}/install_dependencies.sh"
 
 RUN pip install --upgrade pip \
   # install custom packages and dependencies
