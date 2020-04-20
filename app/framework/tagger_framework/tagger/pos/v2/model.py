@@ -149,7 +149,7 @@ class Model(model_template.Model):
             return None
         return self.model.tag_sents(sentences)
 
-    def save(self, path: str):
+    def save(self, path: str) -> None:
         """Model saver method.
 
         Args:
@@ -158,9 +158,10 @@ class Model(model_template.Model):
         Raises:
           IOError: Occurred when saving error happed.
         """
-        raise NotImplementedError("The model cannot be pickled")
+        save_obj_pkl(self.model, path)
+        return
     
-    def load(self, path: str):
+    def load(self, path: str) -> None:
         """Model loader method.
 
         Args:
@@ -169,4 +170,7 @@ class Model(model_template.Model):
         Rises:
           IOError, Error: Occurred when loading/deserializing the obj.
         """
-        raise NotImplementedError("The model cannot be pickled")
+        self.model, err = load_obj_pkl(path)
+        if err:
+            raise IOError(err)
+        return      
