@@ -162,25 +162,28 @@ class Model(model_template.Model):
             return None
         return self.model.tag_sents(sentences)
 
-    def save(self, path: str):
+    def save(self, path: str) -> None:
         """Model saver method.
 
         Args:
           path: Path to save model into.
         
         Raises:
-          NotImplementedError: Model cannot be pickled, no need to implement. # todo: find a way around
+          IOError: Occurred when saving error happed.
         """
-        raise NotImplementedError("The model cannot be pickled")
-      
+        save_obj_pkl(self.model, path)
+        return
     
-    def load(self, path: str):
+    def load(self, path: str) -> None:
         """Model loader method.
 
         Args:
           path: Path to load model from.
         
         Rises:
-          NotImplementedError: Model cannot be pickled, no need to implement. # todo: find a way around
+          IOError, Error: Occurred when loading/deserializing the obj.
         """
-        raise NotImplementedError("The model cannot be pickled")
+        self.model, err = load_obj_pkl(path)
+        if err:
+            raise IOError(err)
+        return

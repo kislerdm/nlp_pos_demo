@@ -1,6 +1,7 @@
 # Dmitry Kisler © 2020-present
 # www.dkisler.com
 
+import os
 import pathlib
 import pytest
 import importlib.util
@@ -143,3 +144,23 @@ def test_class_model_model_predict():
     assert model.predict([["Introduction"]]) == [[('Introduction', 'NOUN')]],\
               "Prediction error"
     return
+
+
+PATH_MODEL_TEST = "/tmp/model_v1.pt"
+
+
+def test_class_model_model_save():
+    model = module.Model()
+    model.train(corpus=corpus, evaluate=False)
+    model.save(PATH_MODEL_TEST)
+    return
+
+
+def test_class_model_model_load():
+    model = module.Model()
+    model.load(PATH_MODEL_TEST)
+    return
+
+
+if os.path.isfile(PATH_MODEL_TEST):
+    os.remove(PATH_MODEL_TEST)
