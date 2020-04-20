@@ -15,6 +15,9 @@ def corpus_reader(path: str) -> Union[Tuple[str, None],
     
     Returns:
       Corpus text and error string in case of any.
+    
+    Raises:
+      IOError: Occurred on reading/unpacking error.
     """
     try:
         if path.endswith(".gz"):

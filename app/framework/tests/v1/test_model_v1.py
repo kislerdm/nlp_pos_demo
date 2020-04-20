@@ -5,13 +5,14 @@ import pathlib
 import pytest
 import importlib.util
 from types import ModuleType
+from io import StringIO
 import inspect
 import warnings
 warnings.simplefilter(action='ignore', 
                       category=FutureWarning)
 
 
-DIR = pathlib.Path(__file__).absolute().parents[2]
+DIR = pathlib.Path(__file__).absolute().parents
 PACKAGE = "tagger_framework/tagger/pos/v1"
 MODULE = "model"
 
@@ -25,33 +26,12 @@ CLASS_MODEL_METHODS = set(['RULES', '_model_definition',
 
 CLASS_MODEL_EVAL_ELEMENTS = ['dataset', 'accuracy']
 
-CLASS_CORPUS_METHODS = set(['_build_corpus', 'train', 'dev'])
+CLASS_CORPUS_METHODS = set(['_build_corpus', 'train', 'dev', 'test'])
 
-DATASET_TRAIN = """# newdoc id = GUM_academic_art
-# sent_id = GUM_academic_art-1
-# text = Aesthetic Appreciation and Spanish Art:
-# s_type=frag
-1	Aesthetic	aesthetic	ADJ	JJ	Degree=Pos	2	amod	_	_
-2	Appreciation	appreciation	NOUN	NN	Number=Sing	0	root	_	_
-3	and	and	CCONJ	CC	_	5	cc	_	_
-4	Spanish	Spanish	ADJ	JJ	Degree=Pos	5	amod	_	_
-5	Art	art	NOUN	NN	Number=Sing	2	conj	_	SpaceAfter=No
-6	:	:	PUNCT	:	_	2	punct	_	_
-
-# sent_id = GUM_academic_art-2
-# text = Insights from Eye-Tracking
-# s_type=frag
-1	Insights	insight	NOUN	NNS	Number=Plur	0	root	_	_
-2	from	from	ADP	IN	_	3	case	_	_
-3	Eye-Tracking	eye-tracking	NOUN	NN	Number=Sing	1	nmod	_	_
-"""
-
-DATASET_DEV = """# newdoc id = GUM_academic_exposure
-# sent_id = GUM_academic_exposure-1
-# text = Introduction
-# s_type=frag
-1	Introduction	introduction	NOUN	NN	Number=Sing	0	root	_	_
-"""
+DATA_DIR = f"{DIR[1]}/data"
+DATASET_TRAIN = f"{DATA_DIR}/train.conllu"
+DATASET_DEV = f"{DATA_DIR}/dev.conllu"
+DATASET_TEST = f"{DATA_DIR}/test.conllu"
 
 
 def load_module(module_name: str) -> ModuleType:
@@ -61,7 +41,7 @@ def load_module(module_name: str) -> ModuleType:
     Returns:
         module object
     """
-    file_path = f"{DIR}/{PACKAGE}/{module_name}.py"
+    file_path = f"{DIR[2]}/{PACKAGE}/{module_name}.py"
     spec = importlib.util.spec_from_file_location(module_name, file_path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -92,7 +72,7 @@ def test_module_miss_functions() -> None:
   
 
 def test_class_corpus_miss_methods_attrs() -> None:
-    members = module.Corpus("").__dir__()
+    members = module.Corpus(path_train=DATASET_DEV).__dir__()
     missing = CLASS_CORPUS_METHODS.difference(set(members))
     assert not missing, f"""Class Corpus Method(s) '{"', '".join(missing)}' is(are) missing."""
     return
@@ -100,12 +80,13 @@ def test_class_corpus_miss_methods_attrs() -> None:
 
 def test_corpus_generation():
     try:
-        corpus = module.Corpus(train=DATASET_TRAIN,
-                               dev=DATASET_DEV)
+        corpus = module.Corpus(path_train=DATASET_TRAIN,
+                               path_dev=DATASET_DEV,
+                               path_test=DATASET_TEST)
     except Exception as ex:
         raise Exception(ex)
     
-    assert (len(corpus.train), len(corpus.dev)) == (2, 1),\
+    assert (len(corpus.train), len(corpus.dev), len(corpus.test)) == (2, 1, 1),\
       "Corpus generation error (count of sentenses)"
     
     assert corpus.train == [
@@ -141,8 +122,9 @@ def test_class_model_model_definition():
     return
 
 
-corpus = module.Corpus(train=DATASET_TRAIN,
-                       dev=DATASET_DEV)
+corpus = module.Corpus(path_train=DATASET_TRAIN,
+                       path_dev=DATASET_DEV,
+                       path_test=DATASET_TEST)
 
 
 def test_class_model_model_train():
@@ -150,7 +132,8 @@ def test_class_model_model_train():
     model_eval = model.train(corpus=corpus,
                              evaluate=True)
     assert (round(model_eval[0].accuracy, 1), 
-            round(model_eval[1].accuracy, 1)) == (0.8, 1.),\
+            round(model_eval[1].accuracy, 1),
+            round(model_eval[2].accuracy, 1)) == (0.8, 1., 1.),\
               "Model training error"
     return
 

@@ -7,7 +7,7 @@ from typing import Tuple, List, Union, NamedTuple
 from nltk import DefaultTagger, RegexpTagger
 from nltk.tokenize import regexp_tokenize as tokenizer
 from pyconll import iter_from_string as conllu_iterator
-from tagger_framework.utils.io_fs import save_obj_pkl, load_obj_pkl
+from tagger_framework.utils.io_fs import save_obj_pkl, load_obj_pkl, corpus_reader
 import warnings
 warnings.simplefilter(action='ignore', 
                       category=FutureWarning)
@@ -23,19 +23,31 @@ spec.loader.exec_module(model_template)
 
 class Corpus(model_template.Corpus):
     def __init__(self, 
-                 train: str,
-                 dev: str = None):
+                 path_train: str,
+                 path_dev: str = None,
+                 path_test: str = None):
         """Corpus class."""
-        self.train = Corpus._build_corpus(train)
-        self.dev = Corpus._build_corpus(dev)
+        self.train = Corpus._build_corpus(path_train)
+        self.dev = Corpus._build_corpus(path_dev)
+        self.test = Corpus._build_corpus(path_test)
 
     @staticmethod
-    def _build_corpus(document: str) -> List[List[Tuple[str]]]:
+    def _build_corpus(path: str) -> List[List[Tuple[str]]]:
         """Function to define corpus
         
         Args:
-          document: String document.
+          path: Path to corpus file.
+        
+        Raises:
+          IOError: Occurred on reading/unpacking error.
         """
+        if not path:
+            return []
+                  
+        document, err = corpus_reader(path)
+        if err:
+            raise IOError(err)
+          
         if document is None:
           return []
         sentences = []
@@ -112,7 +124,7 @@ class Model(model_template.Model):
         return None
     
     def evaluate(self, 
-                 corpus: Corpus = None) -> List[NamedTuple("model_eval", 
+                 corpus: Corpus) -> List[NamedTuple("model_eval", 
                                                            dataset=str,
                                                            accuracy=float)]:
         """Model metrics evaluation.
@@ -129,6 +141,9 @@ class Model(model_template.Model):
         if corpus.dev:
             output.append(model_template.Model.model_eval(dataset="dev",
                                                           accuracy=self.model.evaluate(corpus.dev)))
+        if corpus.test:
+            output.append(model_template.Model.model_eval(dataset="test",
+                                                          accuracy=self.model.evaluate(corpus.test)))
         
         return output
       
@@ -154,12 +169,10 @@ class Model(model_template.Model):
           path: Path to save model into.
         
         Raises:
-          IOError: Occurred when saving error happed.
+          NotImplementedError: Model cannot be pickled, no need to implement. # todo: find a way around
         """
         raise NotImplementedError("The model cannot be pickled")
-        # err = save_obj_pkl(self.model, path)
-        # if err:
-        #     raise IOError(err)
+      
     
     def load(self, path: str):
         """Model loader method.
@@ -168,11 +181,6 @@ class Model(model_template.Model):
           path: Path to load model from.
         
         Rises:
-          IOError, Error: Occurred when loading/deserializing the obj.
+          NotImplementedError: Model cannot be pickled, no need to implement. # todo: find a way around
         """
         raise NotImplementedError("The model cannot be pickled")
-        # obj, err = load_obj_pkl(path)
-        # if err:
-        #     raise Exception(err)
-        # self.model = obj
-        # del obj
