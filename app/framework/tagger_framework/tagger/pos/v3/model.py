@@ -14,7 +14,11 @@ from flair.trainers import ModelTrainer
 from nltk.tokenize import regexp_tokenize as tokenizer
 import warnings
 from tagger_framework.utils.logger import getLogger
+from tagger_framework.tagger.pos.evaluation import accuracy as accuracy_eval
 import fastjsonschema
+import re
+
+
 warnings.filterwarnings("ignore")
 
 # fix required for flair
@@ -35,69 +39,10 @@ spec.loader.exec_module(model_template)
 
 logs = getLogger("model_ops", kill=False)
 
-MODEL_CONFIG_SCHEMA = {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "type": "object",
-    "title": "Flair U-PoS tagger model config",
-    "additionalProperties": false,
-    "properties": {
-        "learning_rate": {
-            "type": "number",
-            "description": "Initial learning rate",
-            "default": 1.0,
-            "examples": [
-                0.05, 0.1, 0.5
-            ]
-        },
-        "min_learning_rate": {
-            "type": "number",
-            "description": "Learning rate threshold to not go below when anneal.",
-            "default": 0,
-            "minimum": 0,
-            "examples": [
-                0.05, 0.1, 0.5
-            ]
-        },
-        "anneal_factor": {
-            "type": "number",
-            "description": "Learning rate annealing factor.",
-            "default": 0.5,
-            "examples": [
-                0.5, 0.2, 0.1
-            ]
-        },
-        "batch_size": {
-            "type": "integer",
-            "default": 32,
-            "minimum": 1,
-            "examples": [
-                8, 16, 32, 128
-            ]
-        },
-        "epochs_max": {
-            "type": "integer",
-            "description": "Max number of epochs to train.",
-            "default": 1,
-            "examples": [
-                10.0
-            ]
-        },
-        "patience": {
-            "type": "integer",
-            "description": "How many epoch to wait before learning rate annealing.",
-            "default": 1,
-            "minimum": 0,
-            "examples": [
-                1, 2, 3
-            ]
-        }
-    }
-}
-
-model_config_validator = fastjsonschema.compile(MODEL_CONFIG_SCHEMA)
-
 
 class Dataset(UniversalDependenciesDataset):
+    TAG_REGEX = re.compile("<(\w+)>", re.I)
+
     def __init__(self, path: str):
         """Dataset class.
         
@@ -112,13 +57,35 @@ class Dataset(UniversalDependenciesDataset):
         self.sentences: List[Sentence] = []
         if path:
             super(Dataset, self).__init__(
-                path_to_conll_file=self.path_to_conll_file, 
-                in_memory=self.in_memory
+                path_to_conll_file=self.path_to_conll_file, in_memory=self.in_memory
             )
+
+    def get_tags(self) -> List[List[str]]:
+        """Extractor of tags from sentence."""
+        if self.total_sentence_count == 0:
+            return []
+
+        return [
+            Dataset.TAG_REGEX.findall(sentence.to_tagged_string("upos"))
+            for sentence in self.sentences
+        ]
+
+    def get_tokens(self) -> List[List[str]]:
+        """Extractor of tags from sentence."""
+        if self.total_sentence_count == 0:
+            return []
+
+        output = []
+        for sentence in self.sentences:
+            output.append([token.text for token in sentence.tokens])
+        return output
 
 
 class Corpus(Corpus_flair):
-    def __init__(self, path_train: str, path_dev: str = None, path_test: str = None):
+    def __init__(self, 
+                 path_train: str, 
+                 path_dev: str = None, 
+                 path_test: str = None):
         """Corpus class.
         
         Args:
@@ -147,9 +114,56 @@ def tokenization(document: str) -> List[Sentence]:
         Sentence(sentence_str)
         for sentence_str in tokenizer(document, pattern="\n+", gaps=True)
     ]
-    
+
 
 class Model(model_template.Model):
+    MODEL_CONFIG_SCHEMA = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "title": "Flair U-PoS tagger model config",
+        "additionalProperties": False,
+        "properties": {
+            "learning_rate": {
+                "type": "number",
+                "description": "Initial learning rate",
+                "default": 1.0,
+                "examples": [0.05, 0.1, 0.5],
+            },
+            "min_learning_rate": {
+                "type": "number",
+                "description": "Learning rate threshold to not go below when anneal.",
+                "default": 0,
+                "minimum": 0,
+                "examples": [0.05, 0.1, 0.5],
+            },
+            "anneal_factor": {
+                "type": "number",
+                "description": "Learning rate annealing factor.",
+                "default": 0.5,
+                "examples": [0.5, 0.2, 0.1],
+            },
+            "mini_batch_size": {
+                "type": "integer",
+                "default": 32,
+                "minimum": 1,
+                "examples": [8, 16, 32, 128],
+            },
+            "max_epochs": {
+                "type": "integer",
+                "description": "Max number of epochs to train.",
+                "default": 1,
+                "examples": [10.0],
+            },
+            "patience": {
+                "type": "integer",
+                "description": "How many epoch to wait before learning rate annealing.",
+                "default": 1,
+                "minimum": 0,
+                "examples": [1, 2, 3],
+            },
+        },
+    }
+
     def _model_definition(self) -> SequenceTagger:
         """Function to define and compile the model.
         
@@ -161,15 +175,15 @@ class Model(model_template.Model):
         Returns:
           Model object.
         """
-        return SequenceTagger.load('pos-fast')
+        return SequenceTagger.load("pos-fast")
 
     def train(self, 
-              corpus: Corpus,
-              evaluate: bool = True,
-              config: dict = None) -> Union[None,
-                                           List[NamedTuple("model_eval", 
-                                                           dataset=str,
-                                                           accuracy=float)]]:
+              corpus: Corpus, 
+              evaluate: bool = True, 
+              config: dict = None) -> Union[None, 
+                                            List[NamedTuple("model_eval", 
+                                                            dataset=str, 
+                                                            accuracy=float)]]:
         """Train method.
 
         Args:
@@ -183,11 +197,11 @@ class Model(model_template.Model):
         """
         if self.model is None:
             self._model_definition()
-        
+
         # prepare tags dictionary
-        tag_dictionary = corpus.make_tag_dictionary('upos')
+        tag_dictionary = corpus.make_tag_dictionary("upos")
         tag_dictionary_size = len(tag_dictionary)
-        
+
         # change the dictionary tags
         self.model.tag_dictionary = tag_dictionary
         # set tagger type to universal PoS
@@ -203,27 +217,149 @@ class Model(model_template.Model):
         self.model.transitions = torch.nn.Parameter(
             torch.randn(tag_dictionary_size, tag_dictionary_size)
         )
-        
+
         # define trainer
-        trainer = ModelTrainer(self.model,
-                               corpus)
-        
+        # TODO: optimized
+        # flexibility to select optimizer is omitted due to time constrains
+        # SGD is used
+        trainer = ModelTrainer(self.model, corpus)
+
+        # get training config
+        train_config = Model.get_default_train_config()
+
+        # update configs
+        if config:
+            # validate input config
+            try:
+                fastjsonschema.validate(Model.MODEL_CONFIG_SCHEMA, config)
+            except fastjsonschema.JsonSchemaException as ex:
+                logs.send(f"Provided training configs not valid: {ex}", kill=False)
+                logs.send(
+                    f"Use defaul training configs are being used.",
+                    is_error=False,
+                    kill=False,
+                )
+            for k, v in config.items():
+                train_config[k] = v
+
         # launch training
-        trainer.train("/tmp/",
-                      learning_rate=1,
-                      mini_batch_size=32,
-                      max_epochs=1,
-                      anneal_factor=0.5,
-                      embeddings_storage_mode='cpu',
-                      patience=2,
-                      shuffle=True,
-                      monitor_train=False, 
-                      checkpoint=False, save_final_model=False)
-        
+        trainer.train(
+            "/tmp",
+            embeddings_storage_mode="cpu",
+            shuffle=True,
+            monitor_train=False,
+            checkpoint=False,
+            save_final_model=False,
+            **train_config,
+        )
+
         if evaluate:
             return self.evaluate(corpus)
         return None
-      
+
+    def evaluate(self, 
+                 corpus: Corpus = None) -> List[NamedTuple("model_eval", 
+                                                           dataset=str, 
+                                                           accuracy=float)]:
+        """Model metrics evaluation.
+
+        Args:
+          corpus: Corpus to evaluate model.
+
+        Returns:
+          namedtuple with metrics values: 
+              "accuracy": float
+        """
+
+        def _accuracy(y_true: Dataset, 
+                      y_pred: List[List(tuple)]) -> float:
+            """Function to evaluate model performance using prediction accuracy.
+            
+            Args:
+              y_true: Real tags.
+              y_pred: Tags prediction.
+            
+            Returns:
+              Accuracy in the range between 0.0 and 1.0, 
+              or None in case of an empty input.
+                
+            Raises:
+              ValueError: Exception occurred when input lists' length don't match.
+            """
+            y_pred_converted = []
+            for sentence in y_pred:
+                y_pred_converted.append([
+                    token_tag[1] for token_tag in sentence
+                ])
+            del y_pred
+            return accuracy_eval(y_true.get_tags(), 
+                                 y_pred_converted)
+
+        prediction = self.model.predict(corpus.train)
+        accuracy = _accuracy(corpus.train, 
+                             prediction)
+        output = [model_template.Model.model_eval(dataset="train", 
+                                                  accuracy=accuracy)]
+        
+        if corpus.dev:
+            prediction = self.model.predict(corpus.dev)
+            accuracy = _accuracy(corpus.dev, 
+                                 prediction)
+            output.append(model_template.Model.model_eval(dataset="dev", 
+                                                          accuracy=accuracy))
+
+        if corpus.test:
+            prediction = self.model.predict(corpus.test)
+            accuracy = _accuracy(corpus.test, 
+                                 prediction)
+            output.append(model_template.Model.model_eval(dataset="test", 
+                                                          accuracy=accuracy))
+
+        return output
+
+    def predict(self, sentences: List[Sentence]) -> Union[List[List[Tuple[str]]], None]:
+        """Method to tag tokens from the list of sentences.
+
+        Args:
+          sentences: Sentences.
+        
+        Returns:
+          List of lists with tuples of (form, tag)
+        """
+
+        def _predicted_sentence_converter(sentence: Sentence) -> List[Tuple[str]]:
+            """Converter to match with output convention.
+            
+            Args:
+              sentense: Tokenized sentence.
+            
+            Returns:
+              List of lists with tuples of (form, tag)
+            """
+            tokens_list = [token.text for token in sentence.tokens]
+            tags_list = Model.TAG_REGEX.findall(sentence.to_tagged_string("upos"))
+            return [(token, tag) for token, tag in zip(tokens_list, tags_list)]
+
+        if self.model is None:
+            return None
+
+        return [
+            _predicted_sentence_converter(sentence)
+            for sentence in self.model.predict(sentences)
+        ]
+
+    def save(self, path: str) -> None:
+        """Model saver method.
+
+        Args:
+          path: Path to save model into.
+        
+        Raises:
+          Except: Occurred when saving error happened.
+        """
+        self.model.save(pathlib.Path(path))
+        return
+
     def load(self, path: str) -> None:
         """Model loader method.
 
@@ -235,3 +371,10 @@ class Model(model_template.Model):
         """
         self.model = SequenceTagger.load(pathlib.Path(path))
         return
+
+    @staticmethod
+    def get_default_train_config() -> dict:
+        """Default model config extractor."""
+        return {
+            k: v["default"] for k, v in Model.MODEL_CONFIG_SCHEMA["properties"].items()
+        }
