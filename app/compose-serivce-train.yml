@@ -8,9 +8,5 @@ services:
       args:
         - MODEL_VERSION=${MODEL_VER}
     volumes:
-      - type: bind
-        source: ${BUCKET_DATA}
-        target: /data
-      - type: bind
-        source: ${BUCKET_MODEL}
-        target: /model
+      - ${PWD}/../data:/data
+      - ${PWD}/../model:/model
