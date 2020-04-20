@@ -164,4 +164,4 @@ def test_class_model_model_load():
 
 
 if os.path.isfile(PATH_MODEL_TEST):
-        os.remove(PATH_MODEL_TEST)
+    os.remove(PATH_MODEL_TEST)
