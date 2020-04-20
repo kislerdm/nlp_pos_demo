@@ -32,14 +32,14 @@ class Corpus(ABC):
         return self.dev    
 
 
-def make_tokens(document: str) -> Any:
+def tokenze(document: str) -> Any:
     """Tokenizer function.
     
     Args:
-      document: String document.
+      document: String with lines of tokens separated by single 'space'.
     
     Return:
-      List of tokens.  
+      List of tokenized sentences.
     """
     pass
 
@@ -78,7 +78,7 @@ class Model(ABC):
     @abstractmethod
     def train(self, 
               corpus: Corpus,
-              evalute: bool = True) -> Union[None,
+              evaluate: bool = True) -> Union[None,
                                              List[NamedTuple("model_eval", 
                                                              dataset=str,
                                                              accuracy=float)]]:
@@ -86,6 +86,7 @@ class Model(ABC):
 
         Args:
           corpus: Corpus to train model.
+          evaluate: Flag to return evaluation of the model.
 
         Returns: 
           namedtuple with metrics values: 
@@ -95,7 +96,7 @@ class Model(ABC):
             self._model_definition()
 
         # train model
-        if evalute:
+        if evaluate:
             return self.evaluate(corpus)
         return None
 
@@ -117,11 +118,11 @@ class Model(ABC):
       
     @abstractmethod
     def predict(self, 
-                sentenses: List[str]) -> List[List[str]]:
+                sentences: List[str]) -> dict:
         """Method to tag tokens from the list of sentences.
 
         Args:
-          sentenses: Sentences.
+          sentences: Sentences.
         """
         if self.model is None:
             return None
