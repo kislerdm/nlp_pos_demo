@@ -26,13 +26,19 @@ class Corpus(model_template.Corpus):
                  path_train: str,
                  path_dev: str = None,
                  path_test: str = None):
-        """Corpus class."""
-        self.train = Corpus._build_corpus(path_train)
-        self.dev = Corpus._build_corpus(path_dev)
-        self.test = Corpus._build_corpus(path_test)
+        """Corpus class.
+        
+        Args:
+          path_train: Path to conull train dataset.
+          path_dev: Path to conull dev dataset.
+          path_test: Path to conull test dataset.
+        """
+        self.train = Corpus._build_dataset(path_train)
+        self.dev = Corpus._build_dataset(path_dev)
+        self.tes = Corpus._build_dataset(path_test)
 
     @staticmethod
-    def _build_corpus(path: str) -> List[List[Tuple[str]]]:
+    def _build_dataset(path: str) -> List[List[Tuple[str]]]:
         """Function to define corpus
         
         Args:
@@ -87,9 +93,9 @@ class Model(model_template.Model):
     def train(self, 
               corpus: Corpus,
               evaluate: bool = True) -> Union[None,
-                                             List[NamedTuple("model_eval", 
-                                                             dataset=str,
-                                                             accuracy=float)]]:
+                                              List[NamedTuple("model_eval", 
+                                                              dataset=str,
+                                                              accuracy=float)]]:
         """Train method.
 
         Args:

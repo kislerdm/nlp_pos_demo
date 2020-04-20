@@ -27,7 +27,7 @@ CLASS_MODEL_METHODS = set(['_model_definition',
 
 CLASS_MODEL_EVAL_ELEMENTS = ['dataset', 'accuracy']
 
-CLASS_CORPUS_METHODS = set(['_build_corpus', 'train', 'dev', 'test'])
+CLASS_CORPUS_METHODS = set(['_build_dataset', 'train', 'dev', 'test'])
 
 DATA_DIR = f"{DIR[1]}/data"
 DATASET_TRAIN = f"{DATA_DIR}/train.conllu"
