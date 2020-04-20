@@ -122,7 +122,7 @@ def test_corpus_generation():
 
 def test_class_model_miss_methods() -> None:
     model_members = inspect.getmembers(module.Model)
-    missing = CLASS_MODEL_METHODS.difference(set(model_members))
+    missing = CLASS_MODEL_METHODS.difference(set([i[0] for i in model_members]))
     assert not missing, f"""Class Model Method(s) '{"', '".join(missing)}' is(are) missing."""
     return
 
@@ -153,6 +153,7 @@ def test_class_model_model_train():
             round(model_eval[1].accuracy, 1)) == (1., 1.),\
               "Model training error"
     return
+
   
 def test_class_model_model_predict():
     model = module.Model()
