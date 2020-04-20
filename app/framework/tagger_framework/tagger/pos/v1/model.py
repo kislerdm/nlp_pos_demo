@@ -6,8 +6,8 @@ import importlib.util
 from typing import Tuple, List, Union, NamedTuple
 from nltk import DefaultTagger, RegexpTagger
 from nltk.tokenize import regexp_tokenize as tokenizer
-from framework.utils.corpus_operations import conllu_iterator
-from framework.utils.io_fs import save_obj_pkl, load_obj_pkl
+from tagger_framework.utils.corpus_operations import conllu_iterator
+from tagger_framework.utils.io_fs import save_obj_pkl, load_obj_pkl
 import warnings
 warnings.simplefilter(action='ignore', 
                       category=FutureWarning)

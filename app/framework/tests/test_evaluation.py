@@ -8,7 +8,7 @@ from types import ModuleType
 
 
 DIR = pathlib.Path(__file__).parent
-PACKAGE = "tagger/pos"
+PACKAGE = "tagger_framework/tagger/pos"
 MODULE = "evaluation"
 
 FUNCTIONS = set(['accuracy'])

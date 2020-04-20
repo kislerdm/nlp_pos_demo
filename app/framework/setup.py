@@ -9,8 +9,10 @@ DIR = pathlib.Path(__file__).parent
 requirements = (DIR / "requirements.txt").read_text()
 README = (DIR / "README.md").read_text()
 
+PKG_NAME = "tagger_framework"
+
 setup(
-    name="pos_tagger_framework",
+    name=PKG_NAME,
     version='1.0.0',
     description="Framework to develop PoS tagger models.",
     long_description=README,
@@ -27,8 +29,8 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    packages=find_namespace_packages(where=".",
-                                     exclude=("tests",)),
+    packages=find_namespace_packages(where='.', 
+                                     exclude=('tests',)),
     install_requires=requirements,
     include_package_data=True,
 )
