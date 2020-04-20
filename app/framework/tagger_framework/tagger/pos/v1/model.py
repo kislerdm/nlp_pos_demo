@@ -39,7 +39,7 @@ class Corpus(model_template.Corpus):
 
     @staticmethod
     def _build_dataset(path: str) -> List[List[Tuple[str]]]:
-        """Function to define corpus
+        """Function to define dataset.
         
         Args:
           path: Path to corpus file.
