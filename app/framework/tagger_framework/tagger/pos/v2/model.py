@@ -4,7 +4,7 @@
 import pathlib
 import importlib.util
 from typing import Tuple, List, Union, NamedTuple
-from nltk import DefaultTagger, RegexpTagger
+from nltk import DefaultTagger, UnigramTagger
 from nltk.tokenize import regexp_tokenize as tokenizer
 from pyconll import iter_from_string as conllu_iterator
 from tagger_framework.utils.io_fs import save_obj_pkl, load_obj_pkl
@@ -63,30 +63,14 @@ def tokenization(document: str) -> List[List[str]]:
 
 
 class Model(model_template.Model):
-    RULES = [
-        (r"^(an|a|the)$", "DET"),
-        (r"^(of|in|to|for|on|with|at|from|by|inside|outside)$", "ADP"),
-        (r"^(also|so|then|just|more|as|very|well|even|most)$", "ADV"),
-        (r"^(and|or|but|\&|both|either|nor|so|though|although|however)$", "CCONJ"),
-        (f"^(yes|jup|yeah|yey|well|no|neh|meh|oh|yeah|hey|okay|yep|OK)$", "INTJ"),
-        (f"^(that|if|when|as|how|where|because|while|after)$", "SCONJ"),
-        (r"^(\.|\;|\:|\,|\'|\"|\"\"|\''|\]|\[|\(|\)|\?|\!)$", "PUNCT"),
-        (r"^(\\|``|`|#|@|%|\$)$", "SYM"),
-        (r"^-?[0-9]+(\.[0-9]+)?$", "NUM"),
-        (r"^[a-zA-Z0-9\.\-]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]+$", "PRON"),
-        (r"(.*ing|.*ish)$", "ADJ"),
-        (r"^(.*es|.*ed)$", "VERB"),
-    ]
-    
-    
-    def _model_definition(self) -> RegexpTagger:
+    def _model_definition(self) -> UnigramTagger:
         """Function to define and compile the model.
         
         Returns:
           Model object.
         """
         t0 = DefaultTagger('NOUN')
-        return RegexpTagger(Model.RULES, backoff=t0)
+        return UnigramTagger([[(".", "PUNCT")]], backoff=t0)
             
     def train(self, 
               corpus: Corpus,
@@ -106,6 +90,9 @@ class Model(model_template.Model):
         """
         if self.model is None:
             self._model_definition()
+        
+        self.model = UnigramTagger(corpus.train, 
+                                   backoff=DefaultTagger('NOUN'))
         
         if evaluate:
             return self.evaluate(corpus)

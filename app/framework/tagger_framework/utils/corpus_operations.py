@@ -5,7 +5,6 @@ from typing import Tuple, List, Union
 import functools
 from io import StringIO
 import pandas
-from pyconll import iter_from_string as conllu_iterator
 
 
 def parser_conllu_to_dict(document: str,

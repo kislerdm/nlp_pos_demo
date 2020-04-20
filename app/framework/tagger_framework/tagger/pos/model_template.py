@@ -11,25 +11,18 @@ class Corpus(ABC):
                  train: str,
                  dev: str = None):
         """Corpus class."""
-        self.train = self._build_corpus(train)
-        self.dev = self._build_corpus(dev)
+        self.train = Corpus._build_corpus(train)
+        self.dev = Corpus._build_corpus(dev)
     
+    @staticmethod
     @abstractmethod
-    def _build_corpus(self, document: str) -> Any:
+    def _build_corpus(document: str) -> Any:
         """Function to define corpus
         
         Args:
           document: String document.
         """
-        return 
-        
-    @property
-    def train(self):
-        return self.train
-    
-    @property
-    def dev(self):
-        return self.dev    
+        return
 
 
 def tokenze(document: str) -> Any:
