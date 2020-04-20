@@ -125,7 +125,7 @@ if __name__ == "__main__":
     
     logs.send(f"Saving model to {path_model}", is_error=False, kill=False)
     
-    if os.path.isdir(f"{dir_model}"):
+    if not os.path.isdir(f"{dir_model}"):
         try:
             os.makedirs(dir_model)
         except Exception as ex:
