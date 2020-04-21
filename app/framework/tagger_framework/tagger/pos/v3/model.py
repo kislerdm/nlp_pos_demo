@@ -231,15 +231,15 @@ class Model(model_template.Model):
             # validate input config
             try:
                 fastjsonschema.validate(Model.MODEL_CONFIG_SCHEMA, config)
+                for k, v in config.items():
+                    train_config[k] = v
             except fastjsonschema.JsonSchemaException as ex:
                 logs.send(f"Provided training configs not valid: {ex}", kill=False)
                 logs.send(
-                    f"Use defaul training configs are being used.",
+                    f"Default training configs are being used.",
                     is_error=False,
                     kill=False,
                 )
-            for k, v in config.items():
-                train_config[k] = v
 
         # launch training
         trainer.train(
