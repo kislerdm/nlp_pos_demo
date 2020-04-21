@@ -72,8 +72,8 @@ class Model(model_template.Model):
         (r"^(of|in|to|for|on|with|at|from|by|inside|outside)$", "ADP"),
         (r"^(also|so|then|just|more|as|very|well|even|most)$", "ADV"),
         (r"^(and|or|but|\&|both|either|nor|so|though|although|however)$", "CCONJ"),
-        (f"^(yes|jup|yeah|yey|well|no|neh|meh|oh|yeah|hey|okay|yep|OK)$", "INTJ"),
-        (f"^(that|if|when|as|how|where|because|while|after)$", "SCONJ"),
+        (r"^(yes|jup|yeah|yey|well|no|neh|meh|oh|yeah|hey|okay|yep|OK)$", "INTJ"),
+        (r"^(that|if|when|as|how|where|because|while|after)$", "SCONJ"),
         (r"^(\.|\;|\:|\,|\'|\"|\"\"|\''|\]|\[|\(|\)|\?|\!)$", "PUNCT"),
         (r"^(\\|``|`|#|@|%|\$)$", "SYM"),
         (r"^-?[0-9]+(\.[0-9]+)?$", "NUM"),
@@ -93,15 +93,17 @@ class Model(model_template.Model):
             
     def train(self, 
               corpus: Corpus,
-              evaluate: bool = True) -> Union[None,
-                                              List[NamedTuple("model_eval", 
-                                                              dataset=str,
-                                                              accuracy=float)]]:
+              evaluate: bool = True,
+              config: dict = None) -> Union[None,
+                                            List[NamedTuple("model_eval", 
+                                                            dataset=str,
+                                                            accuracy=float)]]:
         """Train method.
 
         Args:
           corpus: Corpus to train model.
           evaluate: Flag to return evaluation of the model.
+          config: Training config dict (not used for this model).
 
         Returns: 
           namedtuple with metrics values: 

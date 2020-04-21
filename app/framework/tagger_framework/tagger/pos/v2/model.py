@@ -76,15 +76,17 @@ class Model(model_template.Model):
             
     def train(self, 
               corpus: Corpus,
-              evaluate: bool = True) -> Union[None,
-                                              List[NamedTuple("model_eval", 
-                                                              dataset=str,
-                                                              accuracy=float)]]:
+              evaluate: bool = True,
+              config: dict = None) -> Union[None,
+                                            List[NamedTuple("model_eval", 
+                                                            dataset=str,
+                                                            accuracy=float)]]:
         """Train method.
 
         Args:
           corpus: Corpus to train model.
           evaluate: Flag to return evaluation of the model.
+          config: Training config dict (not used for this model).
 
         Returns: 
           namedtuple with metrics values: 

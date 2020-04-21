@@ -219,7 +219,7 @@ class Model(model_template.Model):
 
         # define trainer
         # TODO: optimized
-        # flexibility to select optimizer is omitted due to time constrains
+        # flexibility to select optimizer is omitted due to time constraints
         # SGD is used
         trainer = ModelTrainer(self.model, corpus)
 
