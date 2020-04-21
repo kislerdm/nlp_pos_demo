@@ -9,6 +9,8 @@ from nltk.tokenize import regexp_tokenize as tokenizer
 from pyconll import iter_from_string as conllu_iterator
 from tagger_framework.utils.io_fs import save_obj_pkl, load_obj_pkl, corpus_reader
 import warnings
+
+
 warnings.simplefilter(action='ignore', 
                       category=FutureWarning)
 
@@ -22,18 +24,8 @@ spec.loader.exec_module(model_template)
 
 
 class Corpus(model_template.Corpus):
-    def __init__(self, 
-                 path_train: str,
-                 path_dev: str = None,
-                 path_test: str = None):
-        """Corpus class."""
-        self.train = Corpus._build_corpus(path_train)
-        self.dev = Corpus._build_corpus(path_dev)
-        self.test = Corpus._build_corpus(path_test)
-
-    @staticmethod
-    def _build_corpus(path: str) -> List[List[Tuple[str]]]:
-        """Function to define corpus
+    def _build_dataset(self, path: str) -> List[List[Tuple[str]]]:
+        """Function to define dataset.
         
         Args:
           path: Path to corpus file.
@@ -53,8 +45,8 @@ class Corpus(model_template.Corpus):
         sentences = []
         for sentence in conllu_iterator(document):
             sentences.append(
-                [(token.form, token.upos)
-                for token in sentence]
+                [(token.form, token.upos) 
+                 for token in sentence]
             )
         return sentences
 
@@ -80,8 +72,8 @@ class Model(model_template.Model):
         (r"^(of|in|to|for|on|with|at|from|by|inside|outside)$", "ADP"),
         (r"^(also|so|then|just|more|as|very|well|even|most)$", "ADV"),
         (r"^(and|or|but|\&|both|either|nor|so|though|although|however)$", "CCONJ"),
-        (f"^(yes|jup|yeah|yey|well|no|neh|meh|oh|yeah|hey|okay|yep|OK)$", "INTJ"),
-        (f"^(that|if|when|as|how|where|because|while|after)$", "SCONJ"),
+        (r"^(yes|jup|yeah|yey|well|no|neh|meh|oh|yeah|hey|okay|yep|OK)$", "INTJ"),
+        (r"^(that|if|when|as|how|where|because|while|after)$", "SCONJ"),
         (r"^(\.|\;|\:|\,|\'|\"|\"\"|\''|\]|\[|\(|\)|\?|\!)$", "PUNCT"),
         (r"^(\\|``|`|#|@|%|\$)$", "SYM"),
         (r"^-?[0-9]+(\.[0-9]+)?$", "NUM"),
@@ -89,7 +81,6 @@ class Model(model_template.Model):
         (r"(.*ing|.*ish)$", "ADJ"),
         (r"^(.*es|.*ed)$", "VERB"),
     ]
-    
     
     def _model_definition(self) -> RegexpTagger:
         """Function to define and compile the model.
@@ -102,15 +93,17 @@ class Model(model_template.Model):
             
     def train(self, 
               corpus: Corpus,
-              evaluate: bool = True) -> Union[None,
-                                             List[NamedTuple("model_eval", 
-                                                             dataset=str,
-                                                             accuracy=float)]]:
+              evaluate: bool = True,
+              config: dict = None) -> Union[None,
+                                            List[NamedTuple("model_eval", 
+                                                            dataset=str,
+                                                            accuracy=float)]]:
         """Train method.
 
         Args:
           corpus: Corpus to train model.
           evaluate: Flag to return evaluation of the model.
+          config: Training config dict (not used for this model).
 
         Returns: 
           namedtuple with metrics values: 
@@ -125,8 +118,8 @@ class Model(model_template.Model):
     
     def evaluate(self, 
                  corpus: Corpus) -> List[NamedTuple("model_eval", 
-                                                           dataset=str,
-                                                           accuracy=float)]:
+                                                    dataset=str,
+                                                    accuracy=float)]:
         """Model metrics evaluation.
 
         Args:
@@ -169,7 +162,7 @@ class Model(model_template.Model):
           path: Path to save model into.
         
         Raises:
-          IOError: Occurred when saving error happed.
+          IOError: Occurred when saving error happened.
         """
         save_obj_pkl(self.model, path)
         return

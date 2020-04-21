@@ -6,8 +6,12 @@ import pathlib
 import time
 import importlib
 import argparse
-import warnings
+import json
+from typing import Tuple, Union
 from tagger_framework.utils.logger import getLogger
+import warnings
+
+
 warnings.simplefilter(action='ignore', 
                       category=FutureWarning)
 
@@ -20,7 +24,7 @@ BUCKET_MODEL = os.getenv("BUCKET_MODEL", "/model")
 
 
 def get_model_dir() -> str:
-    """Generate die to store the model into."""
+    """Generate date to store the model into."""
     return f"{BUCKET_MODEL}/{MODEL_VERSION}/{time.strftime('%Y/%m/%d', time.gmtime())}"
 
 
@@ -41,7 +45,7 @@ def get_args() -> argparse.Namespace:
                         help="Path to dev corpus.",
                         type=str,
                         default=None,
-                        required=False)
+                        required=True)
     parser.add_argument('--path-test',
                         help="Path to test corpus.",
                         type=str,
@@ -52,10 +56,32 @@ def get_args() -> argparse.Namespace:
                         type=str,
                         default=None,
                         required=False)
+    parser.add_argument('--train-config',
+                        help="""Configurations for model training as JSON.
+                        
+                        Example:
+                            {"learning_rate": 0.00001}
+                        """,
+                        type=str,
+                        default=None,
+                        required=False)
     
     args = parser.parse_args()
     return args
-  
+
+
+def train_configs_parser(conf: str) -> Tuple[Union[dict, None], 
+                                             Union[None, str]]:
+    """Function to parse training parameters config.
+    
+    Args:
+      conf: Input configs string.
+    """
+    try:
+        return json.loads(conf), None
+    except json.JSONDecodeError as ex:
+        return None, ex
+    
 
 if __name__ == "__main__":
     logs = getLogger(logger=f"service/train/{MODEL_VERSION}")
@@ -81,10 +107,11 @@ if __name__ == "__main__":
                   lineno=logs.get_line(),
                   kill=True)
     
-    path_data_dev = None
-    if args.path_dev:
-        path_data_dev = f"{BUCKET_DATA}/{args.path_dev}"
-        path_data_dev = path_data_dev if os.path.isfile(path_data_dev) else None
+    path_data_dev = f"{BUCKET_DATA}/{args.path_dev}"
+    if not os.path.isfile(path_data_dev):
+        logs.send(f"Dev data set {path_data_dev} not found.",
+                  lineno=logs.get_line(),
+                  kill=True)
     
     path_data_test = None
     if args.path_test:
@@ -106,14 +133,21 @@ if __name__ == "__main__":
     
     path_model = args.path_model
     if path_model:
-        logs.send(f"Pre-trained model from {path_model} is being pre-loaded.", is_error=False, kill=False)
+        logs.send(f"Pre-trained model from {path_model} is being pre-loaded.", 
+                  is_error=False, 
+                  kill=False)
                 
     model = model_module.Model(path=path_model)
     
+    train_config = None
+    if args.train_config:
+        train_config, err = train_configs_parser(args.train_config)
+            
     logs.send("Start model training", is_error=False, kill=False)
     t0 = time.time()
     train_metrics = model.train(corpus=corpus,
-                                evaluate=True)
+                                evaluate=True,
+                                config=train_config)
     
     train_metrics = '\n'.join([str(i) for i in train_metrics])
     logs.send(f"Training completed. Elapsed time {round(time.time() - t0, 2)} sec. Model score:\n{train_metrics}",

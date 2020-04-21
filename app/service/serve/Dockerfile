@@ -10,15 +10,12 @@ VOLUME /data /model
 ARG MODEL_VERSION="v1"
 ENV MODEL_VERSION ${MODEL_VERSION}
 
-# flag for the framework
-ENV RUN_IN_DOCKER "yes"
-
 WORKDIR /app
 
 # copy the service
 # to be modified to "COPY . ." if using ci/cd 
 # with the prior step of copying framework to the service dir, or artifacts
-COPY service/train .
+COPY service/serve .
 COPY framework framework
 
 ARG PATH_MISC="framework/tagger_framework/tagger/pos/${MODEL_VERSION}/install_dependencies.sh"

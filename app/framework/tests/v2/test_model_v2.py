@@ -8,6 +8,8 @@ import importlib.util
 from types import ModuleType
 import inspect
 import warnings
+
+
 warnings.simplefilter(action='ignore', 
                       category=FutureWarning)
 
@@ -27,7 +29,7 @@ CLASS_MODEL_METHODS = set(['_model_definition',
 
 CLASS_MODEL_EVAL_ELEMENTS = ['dataset', 'accuracy']
 
-CLASS_CORPUS_METHODS = set(['_build_corpus', 'train', 'dev', 'test'])
+CLASS_CORPUS_METHODS = set(['_build_dataset', 'train', 'dev', 'test'])
 
 DATA_DIR = f"{DIR[1]}/data"
 DATASET_TRAIN = f"{DATA_DIR}/train.conllu"
@@ -88,7 +90,7 @@ def test_corpus_generation():
         raise Exception(ex)
     
     assert (len(corpus.train), len(corpus.dev), len(corpus.test)) == (2, 1, 1),\
-      "Corpus generation error (count of sentenses)"
+        "Corpus generation error (count of sentenses)"
     
     assert corpus.train == [
       [('Aesthetic', 'ADJ'), ('Appreciation', 'NOUN'), 
@@ -97,7 +99,7 @@ def test_corpus_generation():
       [('Insights', 'NOUN'), ('from', 'ADP'), 
        ('Eye-Tracking', 'NOUN')]
       ],\
-      "Corpus generation error (token/tag split)"
+        "Corpus generation error (token/tag split)"
     
     return
 
@@ -116,10 +118,12 @@ def test_class_model_miss_eval():
     return
 
 
+model = module.Model()
+
+
 def test_class_model_model_definition():
-    model = module.Model()
     assert str(type(model.model)) == "<class 'nltk.tag.sequential.UnigramTagger'>",\
-      "Model definition error"
+        "Model definition error"
     return
   
 
@@ -129,21 +133,18 @@ corpus = module.Corpus(path_train=DATASET_TRAIN,
 
 
 def test_class_model_model_train():
-    model = module.Model()
     model_eval = model.train(corpus=corpus,
                              evaluate=True)
     assert (round(model_eval[0].accuracy, 1), 
             round(model_eval[1].accuracy, 1),
             round(model_eval[2].accuracy, 1)) == (1., 1., 1.),\
-              "Model training error"
+        "Model training error"
     return
 
   
 def test_class_model_model_predict():
-    model = module.Model()
-    model.train(corpus=corpus, evaluate=False)
     assert model.predict([["Introduction"]]) == [[('Introduction', 'NOUN')]],\
-              "Prediction error"
+        "Prediction error"
     return
 
 
@@ -151,17 +152,19 @@ PATH_MODEL_TEST = "/tmp/model_v2.pt"
 
 
 def test_class_model_model_save():
-    model = module.Model()
-    model.train(corpus=corpus, evaluate=False)
-    model.save(PATH_MODEL_TEST)
-    return
+    try:
+        model.save(PATH_MODEL_TEST)
+    except IOError as ex:
+        assert f"Saving error: {ex}"
 
 
 def test_class_model_model_load():
     model = module.Model()
-    model.load(PATH_MODEL_TEST)
+    try:
+        model.load(PATH_MODEL_TEST)
+    except IOError as ex:
+        assert f"Loading error: {ex}"
+    
+    if os.path.isfile(PATH_MODEL_TEST):
+        os.remove(PATH_MODEL_TEST)
     return
-
-
-if os.path.isfile(PATH_MODEL_TEST):
-    os.remove(PATH_MODEL_TEST)

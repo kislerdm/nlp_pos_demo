@@ -22,18 +22,8 @@ spec.loader.exec_module(model_template)
 
 
 class Corpus(model_template.Corpus):
-    def __init__(self, 
-                 path_train: str,
-                 path_dev: str = None,
-                 path_test: str = None):
-        """Corpus class."""
-        self.train = Corpus._build_corpus(path_train)
-        self.dev = Corpus._build_corpus(path_dev)
-        self.test = Corpus._build_corpus(path_test)
-
-    @staticmethod
-    def _build_corpus(path: str) -> List[List[Tuple[str]]]:
-        """Function to define corpus
+    def _build_dataset(self, path: str) -> List[List[Tuple[str]]]:
+        """Function to define dataset.
         
         Args:
           path: Path to corpus file.
@@ -54,7 +44,7 @@ class Corpus(model_template.Corpus):
         for sentence in conllu_iterator(document):
             sentences.append(
                 [(token.form, token.upos)
-                for token in sentence]
+                 for token in sentence]
             )
         return sentences
 
@@ -86,15 +76,17 @@ class Model(model_template.Model):
             
     def train(self, 
               corpus: Corpus,
-              evaluate: bool = True) -> Union[None,
-                                             List[NamedTuple("model_eval", 
-                                                             dataset=str,
-                                                             accuracy=float)]]:
+              evaluate: bool = True,
+              config: dict = None) -> Union[None,
+                                            List[NamedTuple("model_eval", 
+                                                            dataset=str,
+                                                            accuracy=float)]]:
         """Train method.
 
         Args:
           corpus: Corpus to train model.
           evaluate: Flag to return evaluation of the model.
+          config: Training config dict (not used for this model).
 
         Returns: 
           namedtuple with metrics values: 
@@ -156,7 +148,7 @@ class Model(model_template.Model):
           path: Path to save model into.
         
         Raises:
-          IOError: Occurred when saving error happed.
+          IOError: Occurred when saving error happened.
         """
         save_obj_pkl(self.model, path)
         return

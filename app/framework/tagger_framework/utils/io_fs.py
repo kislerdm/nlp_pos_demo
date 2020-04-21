@@ -4,6 +4,7 @@
 from gzip import open as gzip_open
 from typing import Tuple, Union, Any
 import pickle
+import json
 
 
 def corpus_reader(path: str) -> Union[Tuple[str, None],
@@ -28,6 +29,29 @@ def corpus_reader(path: str) -> Union[Tuple[str, None],
                 return f.read(), None
     except IOError as ex:
         return None, ex
+      
+
+def prediction_writer(obj: dict,
+                      path: str) -> None:
+    """Function to write prediction as json file.
+    
+    Args:
+      obj: Prediction object to write to.
+      path: Path to the file.
+    
+
+    Raises:
+      IOError: Occurred on writing error.
+    """
+    try:
+        if path.endswith(".gz"):
+            with gzip_open(path, 'wb') as f:
+                json.dump(obj, f)
+        else:
+            with open(path, 'w') as f:
+                json.dump(obj, f)
+    except IOError as ex:
+        raise ex
 
 
 def load_obj_pkl(path: str) -> Tuple[Any, 

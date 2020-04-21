@@ -11,7 +11,7 @@ DIR = pathlib.Path(__file__).absolute().parents[1]
 PACKAGE = "tagger_framework/tagger/pos"
 MODULE = "model_template"
 
-FUNCTIONS = set([])
+FUNCTIONS = set(['tokenization'])
 CLASSES = set(['Model', 'Corpus'])
 
 

@@ -1,10 +1,10 @@
 version: "3.7"
 services:
   train:
-    image: service/train:${MODEL_VERSION}
+    image: service/serve:${MODEL_VERSION}
     build:
       context: .
-      dockerfile: service/train/Dockerfile
+      dockerfile: service/serve/Dockerfile
       args:
         - MODEL_VERSION=${MODEL_VERSION}
     volumes:
