@@ -7,6 +7,7 @@ import time
 import importlib
 import argparse
 import json
+import yaml
 from typing import Tuple, Union
 from tagger_framework.utils.logger import getLogger
 import warnings
@@ -149,9 +150,12 @@ if __name__ == "__main__":
                                 evaluate=True,
                                 config=train_config)
     
-    train_metrics = '\n'.join([str(i) for i in train_metrics])
-    logs.send(f"Training completed. Elapsed time {round(time.time() - t0, 2)} sec. Model score:\n{train_metrics}",
+    logs.send(f"Training completed. Elapsed time {round(time.time() - t0, 2)} sec.",
               is_error=False, 
+              kill=False)
+    
+    logs.send(f"Model score:\n{json.dumps(train_metrics, indent=2)}",
+              is_error=False,
               kill=False)
     
     dir_model = get_model_dir()
