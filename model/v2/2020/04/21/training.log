@@ -1,0 +1,9 @@
+2020-04-21 15:35:04.408 [INFO ] [service/train/v2] Init.
+2020-04-21 15:35:05.368 [INFO ] [service/train/v2] Reading data and building corpus.
+2020-04-21 15:35:06.507 [INFO ] [service/train/v2] Defining the model.
+2020-04-21 15:35:06.507 [INFO ] [service/train/v2] Start model training
+2020-04-21 15:35:07.116 [INFO ] [service/train/v2] Training completed. Elapsed time 0.61 sec. Model score:
+model_eval(dataset='train', accuracy=0.9398079128440368)
+model_eval(dataset='dev', accuracy=0.8510228948887322)
+model_eval(dataset='test', accuracy=0.8401155488570711)
+2020-04-21 15:35:07.116 [INFO ] [service/train/v2] Saving model to /home/dkisler/projects/assessment_back_ml_eng/model/v2/2020/04/21/v2_20200421T13351587472507Z.pt
