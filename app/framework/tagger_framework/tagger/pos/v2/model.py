@@ -22,23 +22,7 @@ spec.loader.exec_module(model_template)
 
 
 class Corpus(model_template.Corpus):
-    def __init__(self, 
-                 path_train: str,
-                 path_dev: str = None,
-                 path_test: str = None):
-        """Corpus class.
-        
-        Args:
-          path_train: Path to conull train dataset.
-          path_dev: Path to conull dev dataset.
-          path_test: Path to conull test dataset.
-        """
-        self.train = Corpus._build_dataset(path_train)
-        self.dev = Corpus._build_dataset(path_dev)
-        self.tes = Corpus._build_dataset(path_test)
-
-    @staticmethod
-    def _build_dataset(path: str) -> List[List[Tuple[str]]]:
+    def _build_dataset(self, path: str) -> List[List[Tuple[str]]]:
         """Function to define dataset.
         
         Args:
@@ -60,7 +44,7 @@ class Corpus(model_template.Corpus):
         for sentence in conllu_iterator(document):
             sentences.append(
                 [(token.form, token.upos)
-                for token in sentence]
+                 for token in sentence]
             )
         return sentences
 
@@ -162,7 +146,7 @@ class Model(model_template.Model):
           path: Path to save model into.
         
         Raises:
-          IOError: Occurred when saving error happed.
+          IOError: Occurred when saving error happened.
         """
         save_obj_pkl(self.model, path)
         return

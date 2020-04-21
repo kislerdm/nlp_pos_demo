@@ -7,25 +7,32 @@ from collections import namedtuple
 
 
 class Corpus(ABC):
-    def __init__(self, 
-                 train: str,
-                 dev: str = None):
-        """Corpus class."""
-        self.train = Corpus._build_corpus(train)
-        self.dev = Corpus._build_corpus(dev)
-    
-    @staticmethod
+    def __init__(self,
+                 path_train: str,
+                 path_dev: str = None,
+                 path_test: str = None):
+        """Corpus class.
+
+        Args:
+          path_train: Path to conull train dataset.
+          path_dev: Path to conull dev dataset.
+          path_test: Path to conull test dataset.
+        """
+        self.train = self._build_dataset(path_train)
+        self.dev = self._build_dataset(path_dev)
+        self.test = self._build_dataset(path_test)
+
     @abstractmethod
-    def _build_corpus(document: str) -> Any:
-        """Function to define corpus
+    def _build_dataset(self, path: str) -> Any:
+        """Function to define dataset.
         
         Args:
-          document: String document.
+          path: Path to corpus file.
         """
         return
 
 
-def tokenze(document: str) -> Any:
+def tokenization(document: str) -> Any:
     """Tokenizer function.
     
     Args:
@@ -72,9 +79,9 @@ class Model(ABC):
     def train(self, 
               corpus: Corpus,
               evaluate: bool = True) -> Union[None,
-                                             List[NamedTuple("model_eval", 
-                                                             dataset=str,
-                                                             accuracy=float)]]:
+                                              List[NamedTuple("model_eval", 
+                                                              dataset=str,
+                                                              accuracy=float)]]:
         """Train method.
 
         Args:

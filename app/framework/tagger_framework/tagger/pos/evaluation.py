@@ -30,7 +30,7 @@ def accuracy(y_true: List[List[str]],
         """Flattener for list of lists into a single list."""
         output = []
         for i in inpt:
-          output.extend(i)
+            output.extend(i)
         return numpy.array(output)
     
     y_true = _list_flattener(y_true)
@@ -41,5 +41,5 @@ def accuracy(y_true: List[List[str]],
     
     return numpy.divide(
       numpy.sum(numpy.char.equal(y_true, y_pred)), 
-        y_true.shape[0]
+      y_true.shape[0]
     )

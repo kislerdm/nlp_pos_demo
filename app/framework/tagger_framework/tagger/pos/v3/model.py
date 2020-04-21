@@ -39,39 +39,38 @@ spec.loader.exec_module(model_template)
 
 logs = getLogger("model_ops", kill=False)
 
+TAG_REGEX = re.compile(r"<(\w+)>", re.I)
+
 
 class Dataset(UniversalDependenciesDataset):
-    TAG_REGEX = re.compile("<(\w+)>", re.I)
-
-    def __init__(self, path: str):
+    def __init__(self, path: str = None):
         """Dataset class.
         
         Args:
-          path: Path to conull dataset.
+          path: Path to conllu dataset.
         """
         self.in_memory: bool = True
-        self.path_to_conll_file: pathlib.Path = pathlib.Path(
-            path
-        ) if path else pathlib.Path(".")
+        self.path_to_conll_file: pathlib.Path = pathlib.Path(path) if path else pathlib.Path(".")
         self.total_sentence_count: int = 0
         self.sentences: List[Sentence] = []
         if path:
             super(Dataset, self).__init__(
-                path_to_conll_file=self.path_to_conll_file, in_memory=self.in_memory
+                path_to_conll_file=self.path_to_conll_file, 
+                in_memory=self.in_memory
             )
 
     def get_tags(self) -> List[List[str]]:
-        """Extractor of tags from sentence."""
+        """Extractor of tags from sentences."""
         if self.total_sentence_count == 0:
             return []
 
         return [
-            Dataset.TAG_REGEX.findall(sentence.to_tagged_string("upos"))
+            TAG_REGEX.findall(sentence.to_tagged_string("upos"))
             for sentence in self.sentences
         ]
 
     def get_tokens(self) -> List[List[str]]:
-        """Extractor of tags from sentence."""
+        """Extractor of tokens from sentences."""
         if self.total_sentence_count == 0:
             return []
 
@@ -272,7 +271,7 @@ class Model(model_template.Model):
         """
 
         def _accuracy(y_true: Dataset, 
-                      y_pred: List[List(tuple)]) -> float:
+                      y_pred: List[List[Tuple[str]]]) -> float:
             """Function to evaluate model performance using prediction accuracy.
             
             Args:
@@ -288,13 +287,14 @@ class Model(model_template.Model):
             """
             y_pred_converted = []
             for sentence in y_pred:
-                y_pred_converted.append([
-                    token_tag[1] for token_tag in sentence
-                ])
+                y_pred_converted.append(
+                    TAG_REGEX.findall(sentence.to_tagged_string("upos"))
+                )
             del y_pred
+            
             return accuracy_eval(y_true.get_tags(), 
                                  y_pred_converted)
-
+        
         prediction = self.model.predict(corpus.train)
         accuracy = _accuracy(corpus.train, 
                              prediction)
@@ -337,7 +337,7 @@ class Model(model_template.Model):
               List of lists with tuples of (form, tag)
             """
             tokens_list = [token.text for token in sentence.tokens]
-            tags_list = Model.TAG_REGEX.findall(sentence.to_tagged_string("upos"))
+            tags_list = TAG_REGEX.findall(sentence.to_tagged_string("upos"))
             return [(token, tag) for token, tag in zip(tokens_list, tags_list)]
 
         if self.model is None:
