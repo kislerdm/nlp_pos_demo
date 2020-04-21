@@ -1,6 +1,7 @@
 # Dmitry Kisler © 2020-present
 # www.dkisler.com
 
+import os
 import pathlib
 import importlib.util
 from typing import Tuple, List, Union, NamedTuple
@@ -40,6 +41,8 @@ spec.loader.exec_module(model_template)
 logs = getLogger("model_ops", kill=False)
 
 TAG_REGEX = re.compile(r"<(\w+)>", re.I)
+
+IN_DOCKER = os.getenv("RUN_IN_DOCKER", False)
 
 
 class Dataset(UniversalDependenciesDataset):
@@ -174,7 +177,10 @@ class Model(model_template.Model):
         Returns:
           Model object.
         """
-        return SequenceTagger.load("pos-fast")
+        MODEL_URI = "pos-fast"
+        if IN_DOCKER:
+            MODEL_URI = pathlib.Path("/app/en-pos-ontonotes-fast-v0.4.pt")
+        return SequenceTagger.load(MODEL_URI)
 
     def train(self, 
               corpus: Corpus, 
