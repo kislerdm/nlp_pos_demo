@@ -3,12 +3,15 @@
 
 import pathlib
 import importlib.util
-from typing import Tuple, List, Union, NamedTuple
+from typing import Tuple, List, Dict, Union
 from nltk import DefaultTagger, UnigramTagger
 from nltk.tokenize import regexp_tokenize as tokenizer
 from pyconll import iter_from_string as conllu_iterator
 from tagger_framework.utils.io_fs import save_obj_pkl, load_obj_pkl, corpus_reader
+from tagger_framework.tagger.pos.evaluation import model_performance
 import warnings
+
+
 warnings.simplefilter(action='ignore', 
                       category=FutureWarning)
 
@@ -19,34 +22,6 @@ file_path = f"{pathlib.Path(__file__).absolute().parents[1]}/{module_name}.py"
 spec = importlib.util.spec_from_file_location(module_name, file_path)
 model_template = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(model_template)
-
-
-class Corpus(model_template.Corpus):
-    def _build_dataset(self, path: str) -> List[List[Tuple[str]]]:
-        """Function to define dataset.
-        
-        Args:
-          path: Path to corpus file.
-        
-        Raises:
-          IOError: Occurred on reading/unpacking error.
-        """
-        if not path:
-            return []
-                  
-        document, err = corpus_reader(path)
-        if err:
-            raise IOError(err)
-          
-        if document is None:
-          return []
-        sentences = []
-        for sentence in conllu_iterator(document):
-            sentences.append(
-                [(token.form, token.upos)
-                 for token in sentence]
-            )
-        return sentences
 
 
 def tokenization(document: str) -> List[List[str]]:
@@ -64,6 +39,9 @@ def tokenization(document: str) -> List[List[str]]:
     ]
 
 
+Corpus = model_template.Corpus
+
+
 class Model(model_template.Model):
     def _model_definition(self) -> UnigramTagger:
         """Function to define and compile the model.
@@ -78,9 +56,8 @@ class Model(model_template.Model):
               corpus: Corpus,
               evaluate: bool = True,
               config: dict = None) -> Union[None,
-                                            List[NamedTuple("model_eval", 
-                                                            dataset=str,
-                                                            accuracy=float)]]:
+                                            Dict[str,
+                                                 Dict[str, float]]]:
         """Train method.
 
         Args:
@@ -89,41 +66,49 @@ class Model(model_template.Model):
           config: Training config dict (not used for this model).
 
         Returns: 
-          namedtuple with metrics values: 
-              "accuracy": float
+          Model evaluation metrics.
         """
         if self.model is None:
             self._model_definition()
         
-        self.model = UnigramTagger(corpus.train, 
+        self.model = UnigramTagger(corpus.train.sentences,
                                    backoff=DefaultTagger('NOUN'))
         
         if evaluate:
             return self.evaluate(corpus)
         return None
     
-    def evaluate(self, 
-                 corpus: Corpus = None) -> List[NamedTuple("model_eval", 
-                                                           dataset=str,
-                                                           accuracy=float)]:
+    def evaluate(self,
+                 corpus: Corpus) -> Dict[str,
+                                         Dict[str, float]]:
         """Model metrics evaluation.
 
         Args:
           corpus: Corpus to evaluate model.
 
         Returns:
-          namedtuple with metrics values: 
-              "accuracy": float
+          Model evaluation metrics.
         """
-        output = [model_template.Model.model_eval(dataset="train",
-                                                  accuracy=self.model.evaluate(corpus.train))]
+        def _tag_extractor(sentence: List[Tuple[str]]) -> List[str]:
+            return [token[1] for token in sentence]
+
+        prediction_tags = [_tag_extractor(sentence)
+                           for sentence in self.predict(corpus.train.get_tokens())]
+        output = [{"train": model_performance(corpus.train.get_tags(),
+                                              prediction_tags)}]
+
         if corpus.dev:
-            output.append(model_template.Model.model_eval(dataset="dev",
-                                                          accuracy=self.model.evaluate(corpus.dev)))
+            prediction_tags = [_tag_extractor(sentence)
+                               for sentence in self.predict(corpus.dev.get_tokens())]
+            output.append({"dev": model_performance(corpus.dev.get_tags(),
+                                                    prediction_tags)})
+
         if corpus.test:
-            output.append(model_template.Model.model_eval(dataset="test",
-                                                          accuracy=self.model.evaluate(corpus.test)))
-        
+            prediction_tags = [_tag_extractor(sentence)
+                               for sentence in self.predict(corpus.test.get_tokens())]
+            output.append({"test": model_performance(corpus.test.get_tags(),
+                                                     prediction_tags)})
+
         return output
       
     def predict(self, 

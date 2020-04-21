@@ -4,7 +4,7 @@
 import os
 import pathlib
 import importlib.util
-from typing import Tuple, List, Union, NamedTuple
+from typing import Tuple, List, Dict, Union
 import torch
 from flair import device as torch_device
 from flair.data import Sentence
@@ -13,11 +13,11 @@ from flair.datasets import UniversalDependenciesDataset
 from flair.models import SequenceTagger
 from flair.trainers import ModelTrainer
 from nltk.tokenize import regexp_tokenize as tokenizer
-import warnings
 from tagger_framework.utils.logger import getLogger
-from tagger_framework.tagger.pos.evaluation import accuracy as accuracy_eval
+from tagger_framework.tagger.pos.evaluation import model_performance
 import fastjsonschema
 import re
+import warnings
 
 
 warnings.filterwarnings("ignore")
@@ -186,9 +186,8 @@ class Model(model_template.Model):
               corpus: Corpus, 
               evaluate: bool = True, 
               config: dict = None) -> Union[None, 
-                                            List[NamedTuple("model_eval", 
-                                                            dataset=str, 
-                                                            accuracy=float)]]:
+                                            Dict[str, 
+                                                 Dict[str, float]]]:
         """Train method.
 
         Args:
@@ -197,8 +196,7 @@ class Model(model_template.Model):
           config: Training config dict.
 
         Returns: 
-          namedtuple with metrics values:
-              "accuracy": float
+          Model evaluation metrics.
         """
         if self.model is None:
             self._model_definition()
@@ -223,8 +221,6 @@ class Model(model_template.Model):
             torch.randn(tag_dictionary_size, tag_dictionary_size)
         )
 
-        # define trainer
-        # TODO: optimized
         # flexibility to select optimizer is omitted due to time constraints
         # SGD is used
         trainer = ModelTrainer(self.model, corpus)
@@ -265,21 +261,19 @@ class Model(model_template.Model):
         return None
 
     def evaluate(self, 
-                 corpus: Corpus = None) -> List[NamedTuple("model_eval", 
-                                                           dataset=str, 
-                                                           accuracy=float)]:
+                 corpus: Corpus = None) -> Dict[str, 
+                                                Dict[str, float]]:
         """Model metrics evaluation.
 
         Args:
           corpus: Corpus to evaluate model.
 
         Returns:
-          namedtuple with metrics values: 
-              "accuracy": float
+          Model evaluation metrics.
         """
 
-        def _accuracy(y_true: Dataset, 
-                      y_pred: List[List[Tuple[str]]]) -> float:
+        def _eval(y_true: Dataset, 
+                  y_pred: List[List[Tuple[str]]]) -> Dict[str, float]:
             """Function to evaluate model performance using prediction accuracy.
             
             Args:
@@ -300,28 +294,19 @@ class Model(model_template.Model):
                 )
             del y_pred
             
-            return accuracy_eval(y_true.get_tags(), 
-                                 y_pred_converted)
+            return model_performance(y_true.get_tags(), 
+                                     y_pred_converted)
         
         prediction = self.model.predict(corpus.train)
-        accuracy = _accuracy(corpus.train, 
-                             prediction)
-        output = [model_template.Model.model_eval(dataset="train", 
-                                                  accuracy=accuracy)]
+        output = [{"train": _eval(corpus.train, prediction)}]
         
         if corpus.dev:
             prediction = self.model.predict(corpus.dev)
-            accuracy = _accuracy(corpus.dev, 
-                                 prediction)
-            output.append(model_template.Model.model_eval(dataset="dev", 
-                                                          accuracy=accuracy))
+            output.append({"dev": _eval(corpus.dev, prediction)})
 
         if corpus.test:
             prediction = self.model.predict(corpus.test)
-            accuracy = _accuracy(corpus.test, 
-                                 prediction)
-            output.append(model_template.Model.model_eval(dataset="test", 
-                                                          accuracy=accuracy))
+            output.append({"test": _eval(corpus.test, prediction)})
 
         return output
 

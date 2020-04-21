@@ -1,12 +1,70 @@
 # Dmitry Kisler © 2020-present
 # www.dkisler.com
 
-from typing import List, Tuple, Any, NamedTuple, Union
+from typing import List, Tuple, Dict, Any, Union
 from abc import ABC, abstractmethod
-from collections import namedtuple
+from tagger_framework.utils.io_fs import corpus_reader
+from pyconll import iter_from_string as conllu_iterator
 
 
-class Corpus(ABC):
+class Dataset():
+    def __init__(self, path: str = None):
+        """Dataset class.
+        
+        Args:
+          path: Path to conllu dataset.
+        
+        Raises:
+          IOError: Occurred on reading/unpacking error.
+        """
+        self.total_sentence_count = 0
+        self.sentences = []
+        
+        document, err = corpus_reader(path)
+        if err:
+            raise IOError(err)
+        
+        for sentence in conllu_iterator(document):
+            self.sentences.append(
+                [(token.form, token.upos)
+                 for token in sentence]
+            )
+            self.total_sentence_count += 1
+
+        def __len__(self):
+            return self.total_sentence_count
+          
+        def __getitem__(self, index: int = 0) -> List[Tuple[str]]:
+            return self.sentences[index]      
+    
+    def get_tags(self) -> List[List[str]]:
+        """Extractor of tags from sentences."""
+        if self.total_sentence_count == 0:
+            return []
+        
+        def _get_tags_from_sentence(sentence: List[Tuple[str]]) -> List[str]:
+            return [token[1] for token in sentence]
+            
+        return [
+            _get_tags_from_sentence(sentence)
+            for sentence in self.sentences
+        ]
+
+    def get_tokens(self) -> List[List[str]]:
+        """Extractor of tokens from sentences."""
+        if self.total_sentence_count == 0:
+            return []
+
+        def _get_tokens_from_sentence(sentence: List[Tuple[str]]) -> List[str]:
+            return [token[0] for token in sentence]
+
+        return [
+            _get_tokens_from_sentence(sentence)
+            for sentence in self.sentences
+        ]
+      
+
+class Corpus():
     def __init__(self,
                  path_train: str,
                  path_dev: str = None,
@@ -18,18 +76,9 @@ class Corpus(ABC):
           path_dev: Path to conull dev dataset.
           path_test: Path to conull test dataset.
         """
-        self.train = self._build_dataset(path_train)
-        self.dev = self._build_dataset(path_dev)
-        self.test = self._build_dataset(path_test)
-
-    @abstractmethod
-    def _build_dataset(self, path: str) -> Any:
-        """Function to define dataset.
-        
-        Args:
-          path: Path to corpus file.
-        """
-        return
+        self.train = Dataset(path_train)
+        self.dev = Dataset(path_dev)
+        self.test = Dataset(path_test)
 
 
 def tokenization(document: str) -> Any:
@@ -45,9 +94,6 @@ def tokenization(document: str) -> Any:
 
 
 class Model(ABC):
-    model_eval = namedtuple("model_eval", ["dataset", 
-                                           "accuracy"])
-
     def __init__(self, 
                  path: str = None):
         """"Model definition class
@@ -80,9 +126,8 @@ class Model(ABC):
               corpus: Corpus,
               evaluate: bool = True,
               config: dict = None) -> Union[None,
-                                            List[NamedTuple("model_eval", 
-                                                            dataset=str,
-                                                            accuracy=float)]]:
+                                            Dict[str,
+                                                 Dict[str, float]]]:
         """Train method.
 
         Args:
@@ -91,8 +136,7 @@ class Model(ABC):
           config: Training config dict.
 
         Returns: 
-          namedtuple with metrics values: 
-              "accuracy": float
+          Model evaluation metrics.
         """
         if self.model is None:
             self._model_definition()
@@ -104,27 +148,24 @@ class Model(ABC):
 
     @abstractmethod
     def evaluate(self, 
-                 corpus: Corpus = None) -> List[NamedTuple("model_eval", 
-                                                           dataset=str,
-                                                           accuracy=float)]:
+                 corpus: Corpus = None) -> Dict[str,
+                                                Dict[str, float]]:
         """Model metrics evaluation.
 
         Args:
           corpus: Corpus to evaluate model.
 
         Returns:
-          namedtuple with metrics values: 
-              "accuracy": float
+          Model evaluation metrics.
         """
         return None
       
     @abstractmethod
-    def predict(self, 
-                sentences: List[str]) -> dict:
+    def predict(self, sentences: List[Any]) -> Any:
         """Method to tag tokens from the list of sentences.
 
         Args:
-          sentences: Sentences.
+          sentences: Tokenize sentences.
         """
         if self.model is None:
             return None
@@ -147,4 +188,3 @@ class Model(ABC):
           path: Path to load model from.
         """
         pass
-

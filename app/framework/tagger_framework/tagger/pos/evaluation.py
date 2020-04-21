@@ -1,12 +1,12 @@
 # Dmitry Kisler © 2020-present
 # www.dkisler.com
 
-from typing import List
-import numpy
+from typing import List, Dict
+from sklearn.metrics import f1_score, accuracy_score
 
 
-def accuracy(y_true: List[List[str]], 
-             y_pred: List[List[str]]) -> float:
+def model_performance(y_true: List[List[str]],
+                      y_pred: List[List[str]]) -> Dict[str, float]:
     """Accuracy calculation function
     
     Args:
@@ -14,32 +14,44 @@ def accuracy(y_true: List[List[str]],
       y_pred: List of predicted labels of the tokenized sentese.
       
     Returns:
-      Accuracy in the range between 0.0 and 1.0, 
-      or None in case of an empty input.
+      Dict of metrics:
+      
+        {
+          "accuracy": float,
+          "f1_micro": float,
+          "f1_macro": float,
+          "f1_weighted": float,
+        }
     
     Raises:
       ValueError: Exception occurred when input lists' length don't match.
     """
     if len(y_true) == 0:
-        return None
+        return {}
     
     if len(y_true) != len(y_pred):
         raise ValueError("Lengths of input lists don't match.")
     
-    def _list_flattener(inpt: List[List[str]]) -> numpy.array:
+    def _list_flattener(inpt: List[List[str]]) -> List[str]:
         """Flattener for list of lists into a single list."""
         output = []
         for i in inpt:
             output.extend(i)
-        return numpy.array(output)
-    
+        return output
+
     y_true = _list_flattener(y_true)
     y_pred = _list_flattener(y_pred)
+
+    if len(y_true) != len(y_pred):
+        raise ValueError("Numper of tokens don't match between y_true and y_pred.")
     
-    if y_true.shape != y_pred.shape:
-        raise ValueError("Numper of tokens don't match between y_true and y_pred.")  
-    
-    return numpy.divide(
-      numpy.sum(numpy.char.equal(y_true, y_pred)), 
-      y_true.shape[0]
-    )
+    try:
+        metrics = {
+          "accuracy": accuracy_score(y_true, y_pred),
+          "f1_micro": f1_score(y_true, y_pred, average='micro'),
+          "f1_macro": f1_score(y_true, y_pred, average='macro'),
+          "f1_weighted": f1_score(y_true, y_pred, average='weighted'),
+        }
+    except Exception as ex:
+        raise Exception(f"Metrics calculation error: {ex}")
+    return metrics
