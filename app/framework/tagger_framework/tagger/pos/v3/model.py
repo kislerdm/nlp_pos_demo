@@ -368,7 +368,7 @@ class Model(model_template.Model):
         self.model.save(pathlib.Path(path))
         return
 
-    def load(self, path: str) -> None:
+    def load(self, path: str) -> SequenceTagger:
         """Model loader method.
 
         Args:
@@ -377,8 +377,7 @@ class Model(model_template.Model):
         Rises:
           IOError, Error: Occurred when loading/deserializing the obj.
         """
-        self.model = SequenceTagger.load(pathlib.Path(path))
-        return
+        return SequenceTagger.load(pathlib.Path(path))
 
     @staticmethod
     def get_default_train_config() -> dict:

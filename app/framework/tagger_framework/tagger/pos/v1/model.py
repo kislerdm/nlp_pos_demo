@@ -162,21 +162,18 @@ class Model(model_template.Model):
           path: Path to save model into.
         
         Raises:
-          IOError: Occurred when saving error happened.
+          IOError, pickle.PicklingError: Occurred on writing/pickling error.
         """
         save_obj_pkl(self.model, path)
         return
     
-    def load(self, path: str) -> None:
+    def load(self, path: str) -> RegexpTagger:
         """Model loader method.
 
         Args:
           path: Path to load model from.
         
         Rises:
-          IOError, Error: Occurred when loading/deserializing the obj.
+          IOError, pickle.UnpicklingError: Occurred when loading/deserializing the obj.
         """
-        self.model, err = load_obj_pkl(path)
-        if err:
-            raise IOError(err)
-        return
+        return load_obj_pkl(path)
