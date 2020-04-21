@@ -46,7 +46,7 @@ def prediction_writer(obj: dict,
     try:
         if path.endswith(".gz"):
             with gzip_open(path, 'wb') as f:
-                json.dump(obj, f)
+                f.write(json.dumps(obj).encode('utf-8'))
         else:
             with open(path, 'w') as f:
                 json.dump(obj, f)
@@ -54,22 +54,25 @@ def prediction_writer(obj: dict,
         raise ex
 
 
-def load_obj_pkl(path: str) -> Tuple[Any, 
-                                     Union[str, None]]:
+def load_obj_pkl(path: str) -> Any:
     """Function to load and deserialize object from pickled file.
 
     Args:
       path: Path to object.
 
     Returns:
-      Tuple with the object and error string in case of any.
+      Deserialized/un-pickled object.
+    
+    Rises:
+          IOError, pickle.UnpicklingError: Occurred when loading/deserializing the obj.
     """
     try:
         with open(path, 'rb') as f:
-            obj = pickle.load(f)
-        return obj, None
-    except Exception as ex:
-        return None, ex
+            return pickle.load(f)
+    except IOError as ex:
+        raise ex
+    except pickle.UnpicklingError as ex:
+        raise ex
 
 
 def save_obj_pkl(obj: Any, 
@@ -81,10 +84,12 @@ def save_obj_pkl(obj: Any,
       path: Path to store to.
 
     Raises:
-      IOError: Raises when writing error.
+      IOError, pickle.PicklingError: Occurred on writing/pickling error.
     """
     try:
         with open(path, 'wb') as f:
             pickle.dump(obj, f)
     except IOError as ex:
+        raise ex
+    except pickle.PicklingError as ex:
         raise ex
