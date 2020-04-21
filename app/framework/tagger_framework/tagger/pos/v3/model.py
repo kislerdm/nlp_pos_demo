@@ -134,7 +134,7 @@ class Model(model_template.Model):
             "min_learning_rate": {
                 "type": "number",
                 "description": "Learning rate threshold to not go below when anneal.",
-                "default": 0,
+                "default": 0.00001,
                 "minimum": 0,
                 "examples": [0.05, 0.1, 0.5],
             },
@@ -252,9 +252,11 @@ class Model(model_template.Model):
             "/tmp",
             embeddings_storage_mode="cpu",
             shuffle=True,
-            monitor_train=False,
+            monitor_train=True,
+            monitor_test=True,
             checkpoint=False,
             save_final_model=False,
+            param_selection_mode=False,
             **train_config,
         )
 
