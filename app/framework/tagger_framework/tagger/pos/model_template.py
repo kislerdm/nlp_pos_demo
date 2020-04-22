@@ -1,6 +1,7 @@
 # Dmitry Kisler © 2020-present
 # www.dkisler.com
 
+from io import StringIO
 from typing import List, Tuple, Dict, Any, Union
 from abc import ABC, abstractmethod
 from tagger_framework.utils.io_fs import corpus_reader
@@ -8,11 +9,14 @@ from pyconll import iter_from_string as conllu_iterator
 
 
 class Dataset():
-    def __init__(self, path: str = None):
+    def __init__(self, 
+                 path: str = None, 
+                 from_memory: bool = False):
         """Dataset class.
         
         Args:
           path: Path to conllu dataset.
+          from_memory: To "read" from memory.
         
         Raises:
           IOError: Occurred on reading/unpacking error.
@@ -20,7 +24,7 @@ class Dataset():
         self.total_sentence_count = 0
         self.sentences = []
         
-        document, err = corpus_reader(path)
+        document, err = corpus_reader(path, from_memory)
         if err:
             raise IOError(err)
         
@@ -31,11 +35,11 @@ class Dataset():
             )
             self.total_sentence_count += 1
 
-        def __len__(self):
-            return self.total_sentence_count
-          
-        def __getitem__(self, index: int = 0) -> List[Tuple[str]]:
-            return self.sentences[index]      
+    def __len__(self):
+        return self.total_sentence_count
+      
+    def __getitem__(self, index: int = 0) -> List[Tuple[str]]:
+        return self.sentences[index]      
     
     def get_tags(self) -> List[List[str]]:
         """Extractor of tags from sentences."""
