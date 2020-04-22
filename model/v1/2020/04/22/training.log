@@ -1,0 +1,27 @@
+2020-04-22 02:44:57.984 [INFO ] [service/train/v1] Init.
+2020-04-22 02:44:59.001 [INFO ] [service/train/v1] Reading data and building corpus.
+2020-04-22 02:45:00.135 [INFO ] [service/train/v1] Defining the model.
+2020-04-22 02:45:00.138 [INFO ] [service/train/v1] Start model training
+2020-04-22 02:45:03.045 [INFO ] [service/train/v1] Training completed. Elapsed time 2.91 sec.
+2020-04-22 02:45:03.045 [INFO ] [service/train/v1] Model score:
+{
+  "train": {
+    "accuracy": 0.5221330275229358,
+    "f1_micro": 0.5221330275229358,
+    "f1_macro": 0.38634727886202297,
+    "f1_weighted": 0.4732954069400854
+  },
+  "dev": {
+    "accuracy": 0.5388315269672289,
+    "f1_micro": 0.5388315269672289,
+    "f1_macro": 0.38474140644524296,
+    "f1_weighted": 0.48794378870557026
+  },
+  "test": {
+    "accuracy": 0.5403165033911078,
+    "f1_micro": 0.5403165033911078,
+    "f1_macro": 0.3882471826600896,
+    "f1_weighted": 0.4867607976410461
+  }
+}
+2020-04-22 02:45:03.045 [INFO ] [service/train/v1] Saving model to /Users/dkisler/projects/assessment_back_ml_eng/model/v1/2020/04/22/v1_20200422T00451587512703Z.pt
