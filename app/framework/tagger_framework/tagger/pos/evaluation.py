@@ -27,7 +27,7 @@ def model_performance(y_true: List[List[str]],
       ValueError: Exception occurred when input lists' length don't match.
     """
     if len(y_true) == 0:
-        return {}
+        return None
     
     if len(y_true) != len(y_pred):
         raise ValueError("Lengths of input lists don't match.")
