@@ -67,7 +67,62 @@ CPU: Intel Core i5
 RAM: 8GB 1867MHz (DDR3)
 ```
 
-## Run instructions
+## Application run instructions
+
+### Requirements
+
+The following programs are required:
+
+```yaml
+  git-lfs:
+    ver: '>= 2.10.0'
+  docker:
+    server:
+      ver: '>= 19.03.8'
+    client:
+      ver: '>= 19.03.8'
+    api:
+      ver: '>= 1.40'
+  docker-compose:
+    ver: '>= 1.25.4'
+  ```
+
+**!NOTE!** you should have **sudo** access rights in the env where you plan to run the code.
+
+#### Requirements installation
+
+**Docker**:
+
+- [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+- [MacOs](https://docs.docker.com/docker-for-mac/install/)
+- [Windows](https://docs.docker.com/docker-for-windows/install/)
+
+**Git LFS**: 
+
+see [here](https://git-lfs.github.com/)
+
+*Framework and app have been tested on the following OS*:
+
+```bash
+- MacOS Mojave
+- Ubuntu 16.04
+```
+
+### Repo
+
+Please clone the repo to run the app (**!Note!** [git-lfs](https://git-lfs.github.com/) must be installed):
+
+```bash
+git clone git@github.com:kislerdm/assessment_back_ml_eng.git . --recursive
+```
+
+or (over HTTP)
+
+```bash
+git clone https://github.com/kislerdm/assessment_back_ml_eng.git . --recursive
+```
+
+### Run instructions
 
 The main trigger script is `./run.sh` can be executed to trigger test and serve/predict services.
 
@@ -186,43 +241,4 @@ The path is relative:
     serve: 
       input: "to the ./data/prediction/input directory"
       output: "to the ./data/prediction/output directory"
-```
-
-### Requirements
-
-The following programs are required:
-
-```yaml
-  git-lfs:
-    ver: '>= 2.10.0'
-  docker:
-    server:
-      ver: '>= 19.03.8'
-    client:
-      ver: '>= 19.03.8'
-    api:
-      ver: '>= 1.40'
-  docker-compose:
-    ver: '>= 1.25.4'
-  ```
-
-**!NOTE!** you should have **sudo** access rights in the env where you plan to run the code.
-
-#### Requirements installation
-
-**Docker**:
-
-- [Ubuntu](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
-- [MacOs](https://docs.docker.com/docker-for-mac/install/)
-- [Windows](https://docs.docker.com/docker-for-windows/install/)
-
-**Git LFS**: 
-
-see [here](https://git-lfs.github.com/)
-
-*Framework tested on the following OS*:
-
-```bash
-- MacOS Mojave
-- Ubuntu 16.04
 ```
