@@ -1,0 +1,85 @@
+FROM python:3.8.2-slim-buster AS base
+
+LABEL maintainer="Dmitry Kisler" \
+  email=admin@dkisler.com \
+  web=www.dkisler.com
+
+# flag for the framework
+ENV RUN_IN_DOCKER "yes"
+
+WORKDIR /app
+
+# copy the service
+# to be modified to "COPY . ." if using ci/cd 
+# with the prior step of copying framework to the service dir, or artifacts
+COPY service/train train
+COPY service/serve serve
+COPY framework framework
+
+# model version
+ENV MODEL_VERSION="v3"
+
+ARG PATH_MISC="framework/tagger_framework/tagger/pos/${MODEL_VERSION}/install_dependencies.sh"
+
+RUN pip install --upgrade pip \
+  # install os dependencies if required by the model's py requirements
+  && if [ -f ${PATH_MISC} ]; then chmod +x ${PATH_MISC} && ./${PATH_MISC}; fi \
+  # install custom packages and dependencies
+  && pip install --no-cache-dir pytest ./framework/ \
+  # test the model modules
+  && pytest -W ignore -vv framework/tests
+
+ENV BUCKET_DATA=/app/framework/tests/data
+ENV BUCKET_DATA_INPUT=${BUCKET_DATA}/prediction
+ENV BUCKET_DATA_OUTPUT=${BUCKET_DATA_INPUT}
+ENV BUCKET_MODEL=/model
+
+RUN echo "import json; import os; model=os.getenv('MODEL_VERSION'); path=os.getenv('BUCKET_DATA_OUTPUT');" > validate.py \
+  && echo "prediction = json.load(open(f'{path}/prediction.json', 'r')); assert prediction[0]['upos'] == ['NOUN'], f'Model {model} failed validation!';" >> validate.py
+
+# test model v3
+RUN python train/runner.py \
+  --path-train train.conllu \
+  --path-dev dev.conllu \
+  --path-test test.conllu \
+  --path-model-out ${MODEL_VERSION}_test.pt \
+  --train-config '{"max_epochs": 1}' \
+# serve model
+  && python serve/runner.py \
+    --path-model ${MODEL_VERSION}_test.pt \
+    --path-input test.txt \
+    --path-output prediction.json \
+# validate prediction  
+  && python validate.py
+
+# test v2
+ENV MODEL_VERSION="v2"
+
+RUN python train/runner.py \
+  --path-train train.conllu \
+  --path-dev dev.conllu \
+  --path-test test.conllu \
+  --path-model-out ${MODEL_VERSION}_test.pt \
+# serve model
+  && python serve/runner.py \
+    --path-model ${MODEL_VERSION}_test.pt \
+    --path-input test.txt \
+    --path-output prediction.json \
+# validate prediction  
+  && python validate.py
+
+# test v1
+ENV MODEL_VERSION="v1"
+
+RUN python train/runner.py \
+  --path-train train.conllu \
+  --path-dev dev.conllu \
+  --path-test test.conllu \
+  --path-model-out ${MODEL_VERSION}_test.pt \
+# serve model
+  && python serve/runner.py \
+    --path-model ${MODEL_VERSION}_test.pt \
+    --path-input test.txt \
+    --path-output prediction.json \
+# validate prediction  
+  && python validate.py
