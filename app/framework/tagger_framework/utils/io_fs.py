@@ -7,12 +7,14 @@ import pickle
 import json
 
 
-def corpus_reader(path: str) -> Union[Tuple[str, None],
-                                      Tuple[None, str]]:
+def corpus_reader(path: str, 
+                  from_memory: bool = False) -> Union[Tuple[str, None],
+                                                      Tuple[None, str]]:
     """Function to read corpus text file.
     
     Args:
       path: Path to the file.
+      from_memory: To "read" from memory
     
     Returns:
       Corpus text and error string in case of any.
@@ -21,12 +23,15 @@ def corpus_reader(path: str) -> Union[Tuple[str, None],
       IOError: Occurred on reading/unpacking error.
     """
     try:
-        if path.endswith(".gz"):
-            with gzip_open(path, 'rb') as f:
-                return f.read(), None
+        if from_memory:
+            return path.read(), None
         else:
-            with open(path, 'r', encoding='utf-8') as f:
-                return f.read(), None
+            if path.endswith(".gz"):
+                with gzip_open(path, 'rb') as f:
+                    return f.read(), None
+            else:
+                with open(path, 'r', encoding='utf-8') as f:
+                    return f.read(), None
     except IOError as ex:
         return None, ex
       
