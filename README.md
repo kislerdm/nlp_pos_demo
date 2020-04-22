@@ -23,27 +23,23 @@ The PoS tagging problem is known since decades in computational linguistics. It 
 
 A data science project flow described in [the article](https://towardsdatascience.com/how-to-power-up-your-product-by-machine-learning-with-python-microservice-pt-1-de0f2b434bec) is being followed.
 
-### Steps
+### Objectives
 
 1. Develop a framework to train and serve models
 2. Develop a baseline model
-3. Develop models iteratively to improve tagging accuracy
-4. (*) Deploy model as a web server to be accessible over HTTP as Rest API
-5. (*) Setup a train pipeline on GCP (**).
-
-(*) - additional steps
-
-(**) - the cloud provided is selected based on the free leftover credits I have :)
+3. Develop models iteratively to improve PoS tagging accuracy
 
 #### Model Development
 
-Three logical steps of model development are being followed:
+The logical steps of model development:
 
-- Model **v1**, *rule-based tagger*. It must be better than random PoS class guessing and should presumably yield to the accuracy of 50-60%. Defult class labling (e.g. labling every token as 'NOUN') would give over 20% accuracy alone (see the corpus composition [here](./data/UD_English-GUM/stats.xml)).
+- Model **v1**, *rule-based tagger*. It must be better than random PoS class guessing and should presumably yield to the accuracy of 50-60%. Default class labling (e.g. labling every token as 'NOUN') would give over 20% accuracy alone (see the corpus composition [here](./data/UD_English-GUM/stats.xml)).
 - Model **v2**, *1-gram freq. tagger*, mix of lexical and contextual method. It can reach over 80% accuracy.
-- Model **v3**, *ANN tagger*. At that point, one needs to seriously consider the trade-off between time investment and business requirements. State-of-the-art model performance (every additional 1% after 90% accuracy) can cost months of human hours and years of computation run time with no guarantee of model performance improvement. Luckily, deep learning abstraction creates wide prospect of opportunities for transfer learning. Thanks to NLP community and range of research groups, there is a handful of great frameworks and pre-trained [PoS and NER tagging models](http://nlpprogress.com/english/part-of-speech_tagging.html) with the tate-of-the-art parformance of above 95%. 
+- Model **v3**, *ANN tagger*. At that point, one needs to seriously consider the trade-off between time investment and business requirements. State-of-the-art model performance (every additional 1% after 90% accuracy) can cost months of human hours and years of computation run time with no guarantee of model performance improvement. Luckily, deep learning abstraction creates wide prospect of opportunities for transfer learning. Thanks to NLP community and many research groups, there is a handful of great frameworks and several pre-trained [PoS and NER tagging models](http://nlpprogress.com/english/part-of-speech_tagging.html) with the state-of-the-art performance (accuracy, or F1 score) of above 0.95.
 
-I am going to use [flair](https://github.com/flairNLP/flair) to develop the model **v3**. It is an open source framework with low entry barrier built on top of [pytorch](https://pytorch.org/). It is being constantly developed and maintained by the [ML and NLP group](https://www.informatik.hu-berlin.de/en/forschung-en/gebiete/ml-en/) at Humboldt-Universität zu Berlin. As the model base, a pre-trainned tagger [**'pos-fast'**](https://github.com/flairNLP/flair/blob/master/resources/docs/TUTORIAL_2_TAGGING.md) is being used.
+The opensource library [flair](https://github.com/flairNLP/flair) is being used to develop the model **v3**. It is build on top of [pytorch](https://pytorch.org/) and has "low entry barrier". It is being under active development and maintenance by community and the [ML and NLP group](https://www.informatik.hu-berlin.de/en/forschung-en/gebiete/ml-en/) at Humboldt-Universität zu Berlin. 
+
+As the **v3** model base, a pre-trainned tagger [**'pos-fast'**](https://github.com/flairNLP/flair/blob/master/resources/docs/TUTORIAL_2_TAGGING.md) is being used.
 
 ## Accuracy comparison
 
@@ -51,8 +47,25 @@ I am going to use [flair](https://github.com/flairNLP/flair) to develop the mode
 |-|-:|-:|-:|
 |v1 (rule-based tagger)|0.522|0.539|0.540|
 |v2 (1-gram tagger)|0.940|0.851|0.840|
-|v3 (ANN tagger)|0.970|0.969|0.932|
+|v3 (DNN tagger)|0.970|0.969|0.932|
 
+### Trade-off
+
+Model v3 has noticeable of accuracy improvement of *~0.1* compared to the model v2, it also demonstrates lower level level of overfitting to the test sample. The improvements however come at the price of model complexity, hence its high size and computation power requirements as well as higher maintenance costs (in terms of human hours). These factors must be taken to account for projects risks assessment. One should carefully assess if higher model performance (in terms of accuracy, or other prediction quality metric) brings enough business value to be worth development time and extra operational costs.
+
+|Model|Size [bytes]|Prediction time [ms] (*)|
+|-|-:|-:|
+|v1|      835||
+|v2|   221803||
+|v3| 75183392||
+
+(*) Evaluation was performed on a 5-yo machine:
+
+```yaml
+OS: MacOS Mojave
+CPU: Intel Core i5
+RAM: 8GB 1867MHz (DDR3)
+```
 
 ## Run instructions
 
