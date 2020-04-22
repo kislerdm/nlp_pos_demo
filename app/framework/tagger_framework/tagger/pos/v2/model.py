@@ -94,20 +94,20 @@ class Model(model_template.Model):
 
         prediction_tags = [_tag_extractor(sentence)
                            for sentence in self.predict(corpus.train.get_tokens())]
-        output = [{"train": model_performance(corpus.train.get_tags(),
-                                              prediction_tags)}]
+        output = {"train": model_performance(corpus.train.get_tags(),
+                                             prediction_tags)}
 
         if corpus.dev:
             prediction_tags = [_tag_extractor(sentence)
                                for sentence in self.predict(corpus.dev.get_tokens())]
-            output.append({"dev": model_performance(corpus.dev.get_tags(),
-                                                    prediction_tags)})
+            output['dev'] = model_performance(corpus.dev.get_tags(),
+                                              prediction_tags)
 
         if corpus.test:
             prediction_tags = [_tag_extractor(sentence)
                                for sentence in self.predict(corpus.test.get_tokens())]
-            output.append({"test": model_performance(corpus.test.get_tags(),
-                                                     prediction_tags)})
+            output['test'] = model_performance(corpus.test.get_tags(),
+                                               prediction_tags)
 
         return output
       

@@ -298,15 +298,15 @@ class Model(model_template.Model):
                                      y_pred_converted)
         
         prediction = self.model.predict(corpus.train)
-        output = [{"train": _eval(corpus.train, prediction)}]
+        output = {"train": _eval(corpus.train, prediction)}
         
         if corpus.dev:
             prediction = self.model.predict(corpus.dev)
-            output.append({"dev": _eval(corpus.dev, prediction)})
+            output['dev'] = _eval(corpus.dev, prediction)
 
         if corpus.test:
             prediction = self.model.predict(corpus.test)
-            output.append({"test": _eval(corpus.test, prediction)})
+            output['test'] = _eval(corpus.test, prediction)
 
         return output
 

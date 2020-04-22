@@ -26,10 +26,6 @@ CLASS_MODEL_METHODS = set(['RULES', '_model_definition',
                            'train', 'predict',
                            'save', 'load'])
 
-CLASS_MODEL_EVAL_ELEMENTS = ['dataset', 'accuracy']
-
-CLASS_CORPUS_METHODS = set(['_build_dataset', 'train', 'dev', 'test'])
-
 DATA_DIR = f"{DIR[1]}/data"
 DATASET_TRAIN = f"{DATA_DIR}/train.conllu"
 DATASET_DEV = f"{DATA_DIR}/dev.conllu"
@@ -73,13 +69,6 @@ def test_module_miss_functions() -> None:
     return
   
 
-def test_class_corpus_miss_methods_attrs() -> None:
-    members = module.Corpus(path_train=DATASET_DEV).__dir__()
-    missing = CLASS_CORPUS_METHODS.difference(set(members))
-    assert not missing, f"""Class Corpus Method(s) '{"', '".join(missing)}' is(are) missing."""
-    return
-
-
 def test_corpus_generation():
     try:
         corpus = module.Corpus(path_train=DATASET_TRAIN,
@@ -89,16 +78,15 @@ def test_corpus_generation():
         raise Exception(ex)
     
     assert (len(corpus.train), len(corpus.dev), len(corpus.test)) == (2, 1, 1),\
-        "Corpus generation error (count of sentenses)"
-    
-    assert corpus.train == [
+        "Corpus generation error (count of sentences)"
+
+    assert corpus.train.sentences == [
       [('Aesthetic', 'ADJ'), ('Appreciation', 'NOUN'), 
        ('and', 'CCONJ'), ('Spanish', 'ADJ'), 
        ('Art', 'NOUN'), (':', 'PUNCT')], 
       [('Insights', 'NOUN'), ('from', 'ADP'), 
        ('Eye-Tracking', 'NOUN')]
-      ],\
-        "Corpus generation error (token/tag split)"
+      ], "Corpus generation error (token/tag split)"
     
     return
 
@@ -107,13 +95,6 @@ def test_class_model_miss_methods() -> None:
     model_members = inspect.getmembers(module.Model)
     missing = CLASS_MODEL_METHODS.difference(set([i[0] for i in model_members]))
     assert not missing, f"""Class Model Method(s) '{"', '".join(missing)}' is(are) missing."""
-    return
-
-
-def test_class_model_miss_eval():
-    for i in CLASS_MODEL_EVAL_ELEMENTS:
-        assert getattr(module.Model.model_eval, i),\
-            f"Model eval metric is missing attribute {i}."
     return
 
 
@@ -134,10 +115,12 @@ corpus = module.Corpus(path_train=DATASET_TRAIN,
 def test_class_model_model_train():
     model_eval = model.train(corpus=corpus,
                              evaluate=True)
-    assert (round(model_eval[0].accuracy, 1), 
-            round(model_eval[1].accuracy, 1),
-            round(model_eval[2].accuracy, 1)) == (0.8, 1., 1.),\
-        "Model training error"
+    assert model_eval['dev'] == {
+        "accuracy": 1.0,
+        "f1_micro": 1.0,
+        "f1_macro": 1.0,
+        "f1_weighted": 1.0,
+    }, "Model training error"
     return
 
   

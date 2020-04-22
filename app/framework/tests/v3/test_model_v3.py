@@ -26,8 +26,6 @@ CLASS_MODEL_METHODS = set(["_model_definition", "evaluate",
                            "train", "predict", 
                            "save", "load", "get_default_train_config"])
 
-CLASS_MODEL_EVAL_ELEMENTS = ["dataset", "accuracy"]
-
 CLASS_CORPUS_METHODS = set(["train", "dev", "test"])
 
 CLASS_DATASET_METHODS = set(["get_tags", "get_tokens"])
@@ -125,13 +123,6 @@ def test_class_model_miss_methods() -> None:
     return
 
 
-def test_class_model_miss_eval():
-    for i in CLASS_MODEL_EVAL_ELEMENTS:
-        assert getattr(module.Model.model_eval, i),\
-            f"Model eval metric is missing attribute {i}."
-    return
-
-
 model = module.Model()
 
 
@@ -149,10 +140,12 @@ corpus = module.Corpus(path_train=DATASET_TRAIN,
 def test_class_model_model_train():
     model_eval = model.train(corpus=corpus,
                              evaluate=True)
-    assert (round(model_eval[0].accuracy, 1), 
-            round(model_eval[1].accuracy, 1),
-            round(model_eval[2].accuracy, 1)) == (1., 1., 1.),\
-        "Model training error"
+    assert model_eval['dev'] == {
+        "accuracy": 1.0,
+        "f1_micro": 1.0,
+        "f1_macro": 1.0,
+        "f1_weighted": 1.0,
+    }, "Model training error"
     return
 
 
