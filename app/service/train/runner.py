@@ -148,7 +148,7 @@ if __name__ == "__main__":
     if args.train_config:
         train_config, err = train_configs_parser(args.train_config)
             
-    logs.send("Start model training", is_error=False, kill=False)
+    logs.send("Start model training.", is_error=False, kill=False)
     t0 = time.time()
     train_metrics = model.train(corpus=corpus,
                                 evaluate=True,
