@@ -45,15 +45,135 @@ Three logical steps of model development are being followed:
 
 I am going to use [flair](https://github.com/flairNLP/flair) to develop the model **v3**. It is an open source framework with low entry barrier built on top of [pytorch](https://pytorch.org/). It is being constantly developed and maintained by the [ML and NLP group](https://www.informatik.hu-berlin.de/en/forschung-en/gebiete/ml-en/) at Humboldt-Universität zu Berlin. As the model base, a pre-trainned tagger [**'pos-fast'**](https://github.com/flairNLP/flair/blob/master/resources/docs/TUTORIAL_2_TAGGING.md) is being used.
 
-## Accuracy comparison on *test* dataset
+## Accuracy comparison
 
-|Model version|Accuracy|
-|-|-:|
-|v1 (rule-based tagger)|0.540|
-|v2 (1-gram tagger)|0.840|
-|v3 (ANN tagger)|0.932*|
+|Model version|train|dev|test|
+|-|-:|-:|-:|
+|v1 (rule-based tagger)|0.522|0.539|0.540|
+|v2 (1-gram tagger)|0.940|0.851|0.840|
+|v3 (ANN tagger)|0.970|0.969|0.932|
 
-## How to run
+
+## Run instructions
+
+The main trigger script is `./run.sh` can be executed to trigger test and serve/predict services.
+
+You can get more information by calling helper function (or by simply executing the script)
+
+```bash
+./run.sh -h
+```
+
+### Tests
+
+To trigger a set of e2e tests, run:
+
+```bash
+./run.sh test
+```
+
+**!Note!** The tests may take up to 5-10 minutes.
+
+### Build the app
+
+To build the app for a `MODEL_VERSION`, run:
+
+```bash
+./run.sh build ${MODEL_VERSION}
+```
+
+### Run training/prediction services
+
+To run train/predict service (it outputs the [argparse](https://docs.python.org/3/library/argparse.html) helper for expected stdin parameters), run the following command:
+
+```bash
+./run.sh ${TYPE} ${MODEL_VERSION} -h
+```
+
+where
+
+- TYPE is *train*, or *serve*
+- MODEL_VERSION is the model [version](#Model%20Development)
+
+#### Examples
+
+***Example***: train and evaluate the [**v1** model](#Model%20Development) on the whole corpus.
+
+```bash
+./run.sh train v1 \
+  --path-train en_gum-ud-train.conllu \
+  --path-dev en_gum-ud-dev.conllu \
+  --path-test en_gum-ud-test.conllu \
+  --path-model-out v1.pt
+```
+
+*Expected stdout logs*:
+
+```bash
+2020-04-22 20:15:42.967 [INFO ] [service/train/v1] Init.
+2020-04-22 20:15:44.086 [INFO ] [service/train/v1] Reading data and building corpus.
+2020-04-22 20:15:45.502 [INFO ] [service/train/v1] Defining the model.
+2020-04-22 20:15:45.507 [INFO ] [service/train/v1] Start model training.
+2020-04-22 20:15:49.019 [INFO ] [service/train/v1] Training completed. Elapsed time 3.51 sec.
+2020-04-22 20:15:49.020 [INFO ] [service/train/v1] Model score:
+{
+  "train": {
+    "accuracy": 0.5221330275229358,
+    "f1_micro": 0.5221330275229358,
+    "f1_macro": 0.38634727886202297,
+    "f1_weighted": 0.4732954069400854
+  },
+  "dev": {
+    "accuracy": 0.5388315269672289,
+    "f1_micro": 0.5388315269672289,
+    "f1_macro": 0.38474140644524296,
+    "f1_weighted": 0.48794378870557026
+  },
+  "test": {
+    "accuracy": 0.5403165033911078,
+    "f1_micro": 0.5403165033911078,
+    "f1_macro": 0.3882471826600896,
+    "f1_weighted": 0.4867607976410461
+  }
+}
+2020-04-22 20:15:49.023 [INFO ] [service/train/v1] Saving model to /model/v1.pt
+```
+
+The resulting model is expected to be found in [`./model/v1.pt`](./model/v1.pt).
+
+***Example***: run prediction with the model trained on the step above.
+
+```bash
+./run.sh serve v1 \
+  --path-model v1.pt \
+  --path-input test.txt \
+  --path-output test.json
+```
+
+*Expected stdout logs*:
+
+```bash
+2020-04-22 20:16:47.218 [INFO ] [service/serve/v1] Loading the model.
+2020-04-22 20:16:47.233 [INFO ] [service/serve/v1] Read the input data.
+2020-04-22 20:16:47.247 [INFO ] [service/serve/v1] Prepare/tokenize data.
+2020-04-22 20:16:47.249 [INFO ] [service/serve/v1] Run prediction.
+2020-04-22 20:16:47.250 [INFO ] [service/serve/v1] Convert prediction to output format.
+2020-04-22 20:16:47.251 [INFO ] [service/serve/v1] Write prediction results to /data_prediction/output/test.json
+2020-04-22 20:16:47.271 [INFO ] [service/serve/v1] Prediction completed. Elapsed time 0.05 sec.
+```
+
+The model prediction results file is expected to be found in [`./data/prediction/output/test.json`](./data/prediction/output/test.json).
+
+**!Note!** 
+```yaml
+The path is relative:
+  model: "to the ./model directory"
+  data:
+    train: "to the ./data/UD_English-GUM directory"
+    serve: 
+      input: "to the ./data/prediction/input directory"
+      output: "to the ./data/prediction/output directory"
+```
 
 ### Requirements
 
@@ -72,8 +192,6 @@ The following programs are required:
   docker-compose:
     ver: '>= 1.25.4'
   ```
-
-Port **9999** to be *open* and *not busy*.
 
 **!NOTE!** you should have **sudo** access rights in the env where you plan to run the code.
 
