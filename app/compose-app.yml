@@ -1,0 +1,14 @@
+version: "3.7"
+services:
+  pos-tagger:
+    image: pos-tagger:${MODEL_VERSION}
+    build:
+      context: .
+      dockerfile: service/Dockerfile
+      args:
+        - MODEL_VERSION=${MODEL_VERSION}
+        - RUN_TESTS=n
+    volumes:
+      - ../model:/model
+      - ../data/UD_English-GUM:/data_train
+      - ../data/prediction:/data_prediction

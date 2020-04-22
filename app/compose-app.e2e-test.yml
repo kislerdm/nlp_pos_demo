@@ -1,9 +1,7 @@
 version: "3.7"
 services:
   pos-tagger-e2e-test:
-    image: pos-tagger-e2e-test:1
+    image: pos-tagger:e2e-test
     build:
       context: .
       dockerfile: service/Dockerfile.e2e-test
-      args:
-        - MODEL_VERSION=v3

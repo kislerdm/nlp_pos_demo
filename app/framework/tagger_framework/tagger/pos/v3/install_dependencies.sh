@@ -36,20 +36,23 @@ alpine () {
   && apk add $1
 }
 
-if [[ "${pkgs}" != "" ]]; then
-
-  case "${OS_ID}" in
-      alpine*)  alpine ${pkgs} ;;
-      debian*)  debian ${pkgs} ;;
-      ubuntu*)  debian ${pkgs} ;;
-      centos*)  centos ${pkgs} ;;
-      *)        echo "Unrecognized OS"; exit 1 ;;
-  esac
-
-fi
-
 # py libs
 # CPU optimized pytorch
 pip install --no-cache-dir https://download.pytorch.org/whl/cpu/torch-1.4.0%2Bcpu-cp38-cp38-linux_x86_64.whl fastjsonschema flair==0.4.5
-# fetch pre-trained library
-wget -O /app/en-pos-ontonotes-fast-v0.4.pt "https://s3.eu-central-1.amazonaws.com/alan-nlp/resources/models-v0.4/release-pos-fast-0/en-pos-ontonotes-fast-v0.4.pt"
+
+if [[ "$1" == "train" ]]; then
+  if [[ "${pkgs}" != "" ]]; then
+
+    case "${OS_ID}" in
+        alpine*)  alpine ${pkgs} ;;
+        debian*)  debian ${pkgs} ;;
+        ubuntu*)  debian ${pkgs} ;;
+        centos*)  centos ${pkgs} ;;
+        *)        echo "Unrecognized OS"; exit 1 ;;
+    esac
+
+  fi
+  
+  # fetch pre-trained library
+  wget -O /app/en-pos-ontonotes-fast-v0.4.pt "https://s3.eu-central-1.amazonaws.com/alan-nlp/resources/models-v0.4/release-pos-fast-0/en-pos-ontonotes-fast-v0.4.pt"
+fi
