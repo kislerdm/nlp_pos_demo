@@ -24,16 +24,18 @@ class Dataset():
         self.total_sentence_count = 0
         self.sentences = []
         
-        document, err = corpus_reader(path, from_memory)
-        if err:
-            raise IOError(err)
-        
-        for sentence in conllu_iterator(document):
-            self.sentences.append(
-                [(token.form, token.upos)
-                 for token in sentence]
-            )
-            self.total_sentence_count += 1
+        if path:
+          
+            document, err = corpus_reader(path, from_memory)
+            if err:
+                raise IOError(err)
+            
+            for sentence in conllu_iterator(document):
+                self.sentences.append(
+                  [(token.form, token.upos)
+                   for token in sentence]
+                )
+                self.total_sentence_count += 1
 
     def __len__(self):
         return self.total_sentence_count
