@@ -11,3 +11,6 @@ services:
     volumes:
       - ${PWD}/../data:/data
       - ${PWD}/../model:/model
+    environment:
+      - BUCKET_DATA=/data/UD_English-GUM
+      - BUCKET_MODEL=/model

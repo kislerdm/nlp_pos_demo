@@ -1,6 +1,6 @@
 version: "3.7"
 services:
-  train:
+  serve:
     image: service/serve:${MODEL_VERSION}
     build:
       context: .
@@ -11,3 +11,7 @@ services:
     volumes:
       - ${PWD}/../data:/data
       - ${PWD}/../model:/model
+    environment:
+      - BUCKET_DATA_INPUT=/data/prediction/input
+      - BUCKET_DATA_OUTPUT=/data/prediction/output
+      - BUCKET_MODEL=/model

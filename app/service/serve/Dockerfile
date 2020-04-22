@@ -1,4 +1,4 @@
-FROM python:3.8.1-slim-buster AS base
+FROM python:3.8.2-slim-buster AS base
 
 LABEL maintainer="Dmitry Kisler" \
   email=admin@dkisler.com \
@@ -9,6 +9,17 @@ VOLUME /data /model
 # model version
 ARG MODEL_VERSION="v1"
 ENV MODEL_VERSION ${MODEL_VERSION}
+
+# run tests on build (workaround solution)
+# this step must be done prior build in CI pipeline!
+ARG RUN_TESTS='y'
+
+# flag for the framework
+ENV RUN_IN_DOCKER "yes"
+
+ENV BUCKET_DATA_INPUT null
+ENV BUCKET_DATA_OUTPUT null
+ENV BUCKET_MODEL null
 
 WORKDIR /app
 
@@ -24,12 +35,12 @@ RUN pip install --upgrade pip \
   # install os dependencies if required by the model's py requirements
   && if [ -f ${PATH_MISC} ]; then chmod +x ${PATH_MISC} && ./${PATH_MISC}; fi \
   # install custom packages and dependencies
-  && pip install --no-cache-dir pytest -r requirements.txt \
+  && pip install --no-cache-dir -r requirements.txt \
   # test the model modules
-  && pytest -W ignore -vv framework/tests/*.py \
-  && if [ -d framework/tests/${MODEL_VERSION} ]; then pytest -W ignore -vv framework/tests/${MODEL_VERSION}/; fi \
+  && if [ ${RUN_TESTS} = 'y' ]; then pip install pytest && pytest -W ignore -vv framework/tests/*.py; fi \
+  && if [ ${RUN_TESTS} = 'y' ] && [ -d framework/tests/${MODEL_VERSION} ]; then pytest -W ignore -vv framework/tests/${MODEL_VERSION}/; fi \
   # remove pytest and tests
-  && pip uninstall pytest -y \
+  && if [ ${RUN_TESTS} = 'y' ]; then pip uninstall pytest -y; fi \
   && rm -r framework/tests
 
 ENTRYPOINT [ "python", "runner.py" ]
