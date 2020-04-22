@@ -8,7 +8,7 @@ To build a Part-of-Speech tagger using [Georgetown University Multilayer Corpus]
 
 ### Problem
 
-Despite the fact that the PoS problem may be not of a great usefulness per se, PoS tagging is of a certain importance as an input for text classification (e.g. for sentiment, or styling analysis and syntactic parsing), or as a benchmark for algorithms performance.
+Despite the fact that the PoS problem may be not of a great usefulness per se, PoS tagging is of a definite importance as an input for text classification (e.g. for sentiment, or styling analysis and syntactic parsing), or as a benchmark for algorithms performance.
 
 We all learned PoS tagging in school where we mostly used rule-based method to classify a given word. This method was quite accurate when applying to a stand-alone word, it was however often failing in case of a rarely spoken, or foreign language origin word. The rules weren't often working when a word was put into a sentence, the words sequence/context was becoming important in such case. In some rare cases, i.e. idiomatic expressions, even words sequence analysis didn't work.
 
@@ -18,6 +18,8 @@ The PoS tagging problem is known since decades in computational linguistics. It 
 - *Lexical based*, based on PoS tag occurrence with a word in the text corpus.
 - *Probabilistic/contextual based*, based on the probability of a PoS tags sequence occurrence.
 - *ANN*, based on sub-words embeddings.
+
+This project illustrates a generic approach towards solving ML (or classical) software problem with business implications and focus on deliverability, maintainability and scalability of solution.
 
 ## Project flow
 
