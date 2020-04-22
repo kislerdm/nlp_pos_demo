@@ -56,6 +56,11 @@ def get_args() -> argparse.Namespace:
                         type=str,
                         default=None,
                         required=False)
+    parser.add_argument('--path-model-out',
+                        help="Path to store model into.",
+                        type=str,
+                        default=None,
+                        required=False)
     parser.add_argument('--train-config',
                         help="""Configurations for model training as JSON.
                         
@@ -157,8 +162,12 @@ if __name__ == "__main__":
               is_error=False,
               kill=False)
     
-    dir_model = get_model_dir()
-    path_model = f"{dir_model}/{MODEL_VERSION}_{time.strftime('%Y%m%dT%H%M%sZ', time.gmtime())}.pt"
+    if args.path_model_out:
+        dir_model = BUCKET_MODEL
+        path_model = f"{dir_model}/{args.path_model_out}"
+    else:
+        dir_model = get_model_dir()
+        path_model = f"{dir_model}/{MODEL_VERSION}_{time.strftime('%Y%m%dT%H%M%sZ', time.gmtime())}.pt"
     
     logs.send(f"Saving model to {path_model}", is_error=False, kill=False)
     
