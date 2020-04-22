@@ -17,8 +17,8 @@ ARG RUN_TESTS='y'
 # flag for the framework
 ENV RUN_IN_DOCKER "yes"
 
-ENV BUCKET_DATA null
-ENV BUCKET_MODEL null
+ENV BUCKET_DATA=/data
+ENV BUCKET_MODEL=/model
 
 WORKDIR /app
 

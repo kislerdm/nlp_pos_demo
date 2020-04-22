@@ -9,8 +9,5 @@ services:
         - MODEL_VERSION=${MODEL_VERSION}
         - RUN_TESTS=n
     volumes:
-      - ${PWD}/../data:/data
-      - ${PWD}/../model:/model
-    environment:
-      - BUCKET_DATA=/data/UD_English-GUM
-      - BUCKET_MODEL=/model
+      - ../data/UD_English-GUM:/data
+      - ../model:/model

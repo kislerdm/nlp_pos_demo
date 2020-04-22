@@ -9,8 +9,8 @@ services:
         - MODEL_VERSION=${MODEL_VERSION}
         - RUN_TESTS=n
     volumes:
-      - ${PWD}/../data:/data
-      - ${PWD}/../model:/model
+      - ../data:/data
+      - ../model:/model
     environment:
       - BUCKET_DATA_INPUT=/data/prediction/input
       - BUCKET_DATA_OUTPUT=/data/prediction/output
