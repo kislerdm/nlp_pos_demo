@@ -253,13 +253,15 @@ class Model(Template):
         return None
 
     def evaluate(self, 
-                 corpus: Corpus = None) -> Dict[str, 
-                                                Dict[str, float]]:
+                 corpus: Union[Corpus, Dataset],
+                 extensive_evaluation: bool = False) -> Dict[str,
+                                                             Dict[str, float]]:
         """Model metrics evaluation.
 
         Args:
-          corpus: Corpus to evaluate model.
-
+          corpus: Corpus/Dataset to evaluate model.
+          extensive_evaluation: bool = False
+            
         Returns:
           Model evaluation metrics.
         """
@@ -287,19 +289,24 @@ class Model(Template):
             del y_pred
             
             return model_performance(y_true.get_tags(), 
-                                     y_pred_converted)
+                                     y_pred_converted,
+                                     extensive_evaluation=extensive_evaluation)
         
-        prediction = self.model.predict(corpus.train)
-        output = {"train": _eval(corpus.train, prediction)}
-        
-        if corpus.dev:
-            prediction = self.model.predict(corpus.dev)
-            output['dev'] = _eval(corpus.dev, prediction)
+        if not isinstance(corpus, Dataset):
+            prediction = self.model.predict(corpus.train)
+            output = {"train": _eval(corpus.train, prediction)}
+            
+            if corpus.dev:
+                prediction = self.model.predict(corpus.dev)
+                output['dev'] = _eval(corpus.dev, prediction)
 
-        if corpus.test:
-            prediction = self.model.predict(corpus.test)
-            output['test'] = _eval(corpus.test, prediction)
-
+            if corpus.test:
+                prediction = self.model.predict(corpus.test)
+                output['test'] = _eval(corpus.test, prediction)
+        else: 
+            prediction = self.model.predict(corpus)
+            output = _eval(corpus.train, prediction)
+            
         return output
 
     def predict(self, sentences: List[Sentence]) -> Union[List[List[Tuple[str]]], None]:

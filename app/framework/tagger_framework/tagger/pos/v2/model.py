@@ -69,12 +69,14 @@ class Model(Template):
         return None
     
     def evaluate(self,
-                 corpus: Corpus) -> Dict[str,
-                                         Dict[str, float]]:
+                 corpus: Union[Corpus, Dataset],
+                 extensive_evaluation: bool = False) -> Dict[str,
+                                                             Dict[str, float]]:
         """Model metrics evaluation.
 
         Args:
-          corpus: Corpus to evaluate model.
+          corpus: Corpus/Dataset to evaluate model.
+          extensive_evaluation: bool = False
 
         Returns:
           Model evaluation metrics.
@@ -82,22 +84,32 @@ class Model(Template):
         def _tag_extractor(sentence: List[Tuple[str]]) -> List[str]:
             return [token[1] for token in sentence]
 
-        prediction_tags = [_tag_extractor(sentence)
-                           for sentence in self.predict(corpus.train.get_tokens())]
-        output = {"train": model_performance(corpus.train.get_tags(),
-                                             prediction_tags)}
-
-        if corpus.dev:
+        if not isinstance(corpus, Dataset):
             prediction_tags = [_tag_extractor(sentence)
-                               for sentence in self.predict(corpus.dev.get_tokens())]
-            output['dev'] = model_performance(corpus.dev.get_tags(),
-                                              prediction_tags)
+                               for sentence in self.predict(corpus.train.get_tokens())]
+            output = {"train": model_performance(corpus.train.get_tags(),
+                                                 prediction_tags,
+                                                 extensive_evaluation=extensive_evaluation)}
 
-        if corpus.test:
+            if corpus.dev:
+                prediction_tags = [_tag_extractor(sentence)
+                                   for sentence in self.predict(corpus.dev.get_tokens())]
+                output['dev'] = model_performance(corpus.dev.get_tags(),
+                                                  prediction_tags,
+                                                  extensive_evaluation=extensive_evaluation)
+
+            if corpus.test:
+                prediction_tags = [_tag_extractor(sentence)
+                                   for sentence in self.predict(corpus.test.get_tokens())]
+                output['test'] = model_performance(corpus.test.get_tags(),
+                                                   prediction_tags,
+                                                   extensive_evaluation=extensive_evaluation)
+        else:
             prediction_tags = [_tag_extractor(sentence)
-                               for sentence in self.predict(corpus.test.get_tokens())]
-            output['test'] = model_performance(corpus.test.get_tags(),
-                                               prediction_tags)
+                               for sentence in self.predict(corpus.get_tokens())]
+            output = model_performance(corpus.train.get_tags(), 
+                                       prediction_tags,
+                                       extensive_evaluation=extensive_evaluation)
 
         return output
       
