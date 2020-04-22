@@ -11,7 +11,7 @@ DIR = pathlib.Path(__file__).absolute().parents[1]
 PACKAGE = "tagger_framework/tagger/pos"
 MODULE = "evaluation"
 
-FUNCTIONS = set(['accuracy'])
+FUNCTIONS = set(['model_performance'])
 
 
 def load_module(module_name: str) -> ModuleType:
@@ -46,20 +46,25 @@ def test_module_miss_functions() -> None:
 
   
 def test_accuracy1() -> None:
-  out = module.accuracy([], [])
+  out = module.model_performance([], [])
   assert out is None, "Wrong logic to treat empty input."
   return
 
 
 def test_accuracy2() -> None:
-  out = module.accuracy(["NOUN"], ["NOUN"])
-  assert out == 1.0, "Wrong logic to compute accuracy."
+  out = module.model_performance(["NOUN"], ["NOUN"])
+  assert out == {
+      "accuracy": 1.0,
+      "f1_micro": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+  }, "Wrong logic to compute accuracy."
   return
 
 
 def test_accuracy3() -> None:
   try:
-      _ = module.accuracy(["NOUN", "X"], ["NOUN"])
+      _ = module.model_performance(["NOUN", "X"], ["NOUN"])
   except ValueError as ex:
       assert str(ex) == "Lengths of input lists don't match.",\
         "Wrong logic to treat input of not matching length."
@@ -68,7 +73,7 @@ def test_accuracy3() -> None:
 
 def test_accuracy4() -> None:
   try:
-      _ = module.accuracy([["NOUN"], ["X", "ADJ"]], [["NOUN"], ["X"]])
+      _ = module.model_performance([["NOUN"], ["X", "ADJ"]], [["NOUN"], ["X"]])
   except ValueError as ex:
       assert str(ex) == "Numper of tokens don't match between y_true and y_pred.",\
         "Wrong logic to treat input of not matching length."
