@@ -7,7 +7,6 @@ import time
 import importlib
 import argparse
 import json
-import yaml
 from typing import Tuple, Union
 from tagger_framework.utils.logger import getLogger
 import warnings
