@@ -2,26 +2,19 @@
 # www.dkisler.com
 
 import pathlib
-import importlib.util
 from typing import Tuple, List, Dict, Union
 from nltk import DefaultTagger, UnigramTagger
 from nltk.tokenize import regexp_tokenize as tokenizer
 from pyconll import iter_from_string as conllu_iterator
 from tagger_framework.utils.io_fs import save_obj_pkl, load_obj_pkl, corpus_reader
 from tagger_framework.tagger.pos.evaluation import model_performance
+from tagger_framework.tagger.pos.model_template import Model as Template
+from tagger_framework.tagger.pos.model_template import Dataset, Corpus
 import warnings
 
 
 warnings.simplefilter(action='ignore', 
                       category=FutureWarning)
-
-
-# import model abstract class
-module_name = "model_template"
-file_path = f"{pathlib.Path(__file__).absolute().parents[1]}/{module_name}.py"
-spec = importlib.util.spec_from_file_location(module_name, file_path)
-model_template = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(model_template)
 
 
 def tokenization(document: str) -> List[List[str]]:
@@ -39,10 +32,7 @@ def tokenization(document: str) -> List[List[str]]:
     ]
 
 
-Corpus = model_template.Corpus
-
-
-class Model(model_template.Model):
+class Model(Template):
     def _model_definition(self) -> UnigramTagger:
         """Function to define and compile the model.
         

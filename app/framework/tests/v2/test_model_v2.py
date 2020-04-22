@@ -19,7 +19,7 @@ PACKAGE = "tagger_framework/tagger/pos/v2"
 MODULE = "model"
 
 FUNCTIONS = set(["tokenization"])
-CLASSES = set(["Model", "Corpus"])
+CLASSES = set(["Model", "Dataset", "Corpus"])
 
 CLASS_MODEL_METHODS = set(['_model_definition', 
                            'evaluate',

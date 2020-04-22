@@ -3,7 +3,6 @@
 
 import os
 import pathlib
-import importlib.util
 from typing import Tuple, List, Dict, Union
 import torch
 from flair import device as torch_device
@@ -15,6 +14,7 @@ from flair.trainers import ModelTrainer
 from nltk.tokenize import regexp_tokenize as tokenizer
 from tagger_framework.utils.logger import getLogger
 from tagger_framework.tagger.pos.evaluation import model_performance
+from tagger_framework.tagger.pos.model_template import Model as Template
 import fastjsonschema
 import re
 import warnings
@@ -29,14 +29,6 @@ torch.__version__ = torch.__version__[:5]
 
 # set seed for reproducibility
 torch.manual_seed(2020)
-
-# import model abstract class
-module_name = "model_template"
-file_path = f"{pathlib.Path(__file__).absolute().parents[1]}/{module_name}.py"
-spec = importlib.util.spec_from_file_location(module_name, file_path)
-model_template = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(model_template)
-
 
 logs = getLogger("model_ops", kill=False)
 
@@ -118,7 +110,7 @@ def tokenization(document: str) -> List[Sentence]:
     ]
 
 
-class Model(model_template.Model):
+class Model(Template):
     MODEL_CONFIG_SCHEMA = {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
