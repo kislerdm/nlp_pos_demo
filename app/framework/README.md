@@ -90,4 +90,4 @@ The script can also include model specific python dependencies for sake of frame
 
 ## Misc
 
-The package can be extended limitless with sub-modules. For example, it includes a [module for file system io operations](./tagger_framework/utils/io_fs.py) and can be further extended to have modules with functions to facilitate interactions with cloud providers (e.g. AWS, GCP).
+The package can be extended limitless with sub-modules. For example, it includes a [module for file system io operations](./tagger_framework/utils/io_fs.py) and can be further extended to have modules with functions to facilitate interactions with cloud providers (e.g. AWS, GCP). 
