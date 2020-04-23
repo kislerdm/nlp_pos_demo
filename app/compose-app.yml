@@ -12,3 +12,4 @@ services:
       - ../model:/model
       - ../data/UD_English-GUM:/data_train
       - ../data/prediction:/data_prediction
+      - ../data:/data_eval

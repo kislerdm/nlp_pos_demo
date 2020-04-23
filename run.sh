@@ -10,10 +10,11 @@ msg () {
     echo "$(date +"%Y-%m-%d %H:%M:%S") ${1}"
 }
 
-if [[ ("${1}" !=  "train") && ("${1}" !=  "serve") && ("${1}" !=  "build") && ("${1}" !=  "test") ]]; then
-  msg "Provide type of the serivce: './run.sh train MODEL_VERSION', or './run.sh serve MODEL_VERSION'"
+if [[ ("${1}" !=  "train") && ("${1}" !=  "serve") && ("${1}" !=  "evaluate") \
+   && ("${1}" !=  "build") && ("${1}" !=  "test") ]]; then
+  msg "Provide type of the serivce: './run.sh train MODEL_VERSION', or './run.sh serve MODEL_VERSION', or './run.sh evaluate MODEL_VERSION'"
   msg "To rebuild the app, type: './run.sh build MODEL_VERSION'"
-  msg "For example, ./run.sh build train v1"
+  msg "For example, ./run.sh build v1"
   msg "To perform tests, ./run.sh test. Note that all tests may take a while (up to 5-10 minutes range)."
   exit 1
 fi
@@ -21,11 +22,11 @@ fi
 if [[ "${1}" ==  "test" ]]; then 
   
   COMPOSE_DOCKER_CLI_BUILD=1 BOCKER_BUILDKIT=1 docker-compose \
-    -f ${BASE_DIR}/app/compose.e2e-test.yml up \
+    -f ${BASE_DIR}/app/compose-app.e2e-test.yml up \
     --build
 
   COMPOSE_DOCKER_CLI_BUILD=1 BOCKER_BUILDKIT=1 docker-compose \
-    -f ${BASE_DIR}/app/compose.e2e-test.yml down \
+    -f ${BASE_DIR}/app/compose-app.e2e-test.yml down \
     --remove-orphans \
     --rmi 'all'
 
@@ -33,8 +34,8 @@ elif [[ "${1}" !=  "build" ]]; then
   
   MODEL_VERSION=${2} docker-compose -f ${BASE_DIR}/app/compose-app.yml run pos-tagger ${1} "${@:3}"
 
-else 
-  
-    COMPOSE_DOCKER_CLI_BUILD=1 BOCKER_BUILDKIT=1 MODEL_VERSION=${2} docker-compose -f ${BASE_DIR}/app/compose-app.yml build
+else
+
+  COMPOSE_DOCKER_CLI_BUILD=1 BOCKER_BUILDKIT=1 MODEL_VERSION=${2} docker-compose -f ${BASE_DIR}/app/compose-app.yml build
 
 fi
