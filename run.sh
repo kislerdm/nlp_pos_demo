@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# tagger service runner/builer
+# tagger app services executor
 # Dmitry Kisler © 2020-present
 # www.dkisler.com
 
