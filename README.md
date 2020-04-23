@@ -53,10 +53,9 @@ As the **v3** model base, a pre-trainned tagger [**'pos-fast'**](https://github.
 
 **!Note!** Model predictive performance metrics were evaluated using the [sklearn.metrics](https://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics) based [function](./app/framework/tagger_framework/tagger/pos/evaluation.py) on the [train data set](./data/UD_English-GUM/en_gum-ud-train.conllu).
 
-**!Note!** (*) The time required to run prediction was measured during models evaluation, ergo the numbers cannot be taken as the proper benchmark, but rather as a qualitative comparison. The time measured on 5yo machine with the specs:
-
 **!Note!** The **v3** model was trained for 41 epochs (with limit set to 100) with learning rate annealing by the factor of 0.5 after every 2nd epoch with no loss improvement.
 
+**!Note!** (*) The time required to run prediction was measured during models evaluation, ergo the numbers cannot be taken as the proper benchmark, but rather as a qualitative comparison. The time measured on 5yo machine with the specs:
 
 ```yaml
 OS: MacOS Mojave
@@ -66,7 +65,7 @@ RAM: 8GB 1867MHz (DDR3)
 
 ### Trade-off
 
-Model v3 has noticeable accuracy improvement of over compared to the model v2 (I'd question the accuracy of 1.0, even though  was used to compute the metrics). The improvements however come at the price of model complexity, hence its high size and computation power requirements as well as higher maintenance costs (in terms of human hours). These factors must be taken to account for projects risks assessment. One should carefully assess if higher model performance (in terms of accuracy, or other prediction quality metric) brings enough business value to be worth development time and extra operational costs.
+Model v3 has noticeable accuracy improvement compared to the model v2 (I'd question the accuracy of 1.0, even though sklearn was used to compute the metrics). The improvements however come at the price of model complexity, hence its high size and computation power requirements as well as higher maintenance costs (in terms of human hours). These factors must be taken to account for projects risks assessment. One should carefully assess if higher model performance (in terms of accuracy, or other prediction quality metric) brings enough business value to be worth development time and extra operational costs.
 
 ## PoS Framework
 
@@ -102,7 +101,7 @@ The following programs are required:
     ver: '>= 1.25.4'
   ```
 
-**!NOTE!** you should have **sudo** access rights in the env where you plan to run the code.
+**!NOTE!** you may need **sudo** access rights (depending on your docker settings) in the env where you plan to run the code.
 
 #### Requirements installation
 
@@ -165,17 +164,18 @@ To build the app for a `MODEL_VERSION`, run:
 ./run.sh build ${MODEL_VERSION}
 ```
 
-### Run training/prediction services
+### Run training/prediction/evaluate services
 
-To run train/predict service (it outputs the [argparse](https://docs.python.org/3/library/argparse.html) helper for expected stdin parameters), run the following command:
+To run train/predict/evaluate service, run the following command:
 
 ```bash
 ./run.sh ${TYPE} ${MODEL_VERSION} -h
 ```
+(it outputs the [argparse](https://docs.python.org/3/library/argparse.html) helper for expected stdin parameters)
 
 where
 
-- TYPE is *train*, or *serve*
+- TYPE is *train*, or *serve*, or *evaluate*
 - MODEL_VERSION is the model [version](#Model%20Development)
 
 #### Examples
