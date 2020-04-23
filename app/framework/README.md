@@ -19,7 +19,7 @@
 │       ├── evaluation.py               <- models evaluation function(s)
 │       ├── model_template.py           <- abstract classes defintion
 │       ├── v1						    <- model version v1
-│       │   └── model.py                <- model defintion, class Model, Dataset, Corpus
+│       │   └── model.py                <- model defintion - classes: Model, Dataset, Corpus
 │       ├── v2                          ...
 │       │   └── model.py        
 │       └── v3
