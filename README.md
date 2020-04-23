@@ -41,7 +41,7 @@ The logical steps of model development:
 
 The opensource library [flair](https://github.com/flairNLP/flair) is being used to develop the model **v3**. It is build on top of [pytorch](https://pytorch.org/) and has "low entry barrier". It is being under active development and maintenance by community and the [ML and NLP group](https://www.informatik.hu-berlin.de/en/forschung-en/gebiete/ml-en/) at Humboldt-Universität zu Berlin. 
 
-As the **v3** model base, a pre-trainned tagger [**'pos-fast'**](https://github.com/flairNLP/flair/blob/master/resources/docs/TUTORIAL_2_TAGGING.md) is being used.
+As the **v3** model base, a pre-trained tagger [**'pos-fast'**](https://github.com/flairNLP/flair/blob/master/resources/docs/TUTORIAL_2_TAGGING.md) is being used.
 
 ## Accuracy comparison
 
@@ -76,10 +76,10 @@ One of the set project's objectives is, to illustrate real-life approach one can
 The framework is operated by the runner application which include three services:
 
 - train: the service to train a model defined in the framework with the use of [conllu](https://universaldependencies.org/format.html) data sets. **!Note!** train and dev sets are required.
-- evaluate: the service to evalute the model using conllu data set, i.e. test data set.
+- evaluate: the service to evaluate the model using conllu data set, i.e. test data set.
 - serve: the service to run prediction using (pre-)trained models (defined in the framework/package) given the file of tokenized sentences.  **!Note!** one sentence per line, tokens separated by "space".
 
-*Every service is dockerized and can be deployd to k8s cluster, or as a AWS Fargate, or GCP Cloud Run service.*
+*Every service is dockerized and can be deployed to k8s cluster, or as a AWS Fargate, or GCP Cloud Run service.*
 
 The services are operated with a help of the bash routing/triggering scripts [./run.sh](./run.sh) and [runner.sh](./app/service/runner.sh).
 
