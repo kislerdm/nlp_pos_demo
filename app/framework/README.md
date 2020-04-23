@@ -17,9 +17,9 @@
 ├── tagger
 │   └── pos                             <- PoS tagger (e.g. NER models can be added as well)
 │       ├── evaluation.py               <- models evaluation function(s)
-│       ├── model_template.py           <- abstract classes defintion
+│       ├── model_template.py           <- abstract classes definition
 │       ├── v1						    <- model version v1
-│       │   └── model.py                <- model defintion - classes: Model, Dataset, Corpus
+│       │   └── model.py                <- model definition - classes: Model, Dataset, Corpus
 │       ├── v2                          ...
 │       │   └── model.py        
 │       └── v3
@@ -90,4 +90,4 @@ The script can also include model specific python dependencies for sake of frame
 
 ## Misc
 
-The package can be extended limitless with sub-modules. For example, it includes a [module for file system io operations](./tagger_framework/utils/io_fs.py) and can be further extended to have modules with functions to facilitate io interactions with cloud providers (e.g. AWS, GCP).
+The package can be extended limitless with sub-modules. For example, it includes a [module for file system io operations](./tagger_framework/utils/io_fs.py) and can be further extended to have modules with functions to facilitate interactions with cloud providers (e.g. AWS, GCP).
