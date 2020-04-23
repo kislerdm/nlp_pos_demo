@@ -253,14 +253,12 @@ class Model(Template):
         return None
 
     def evaluate(self, 
-                 corpus: Union[Corpus, Dataset],
-                 extensive_evaluation: bool = False) -> Dict[str,
-                                                             Dict[str, float]]:
+                 corpus: Union[Corpus, Dataset]) -> Dict[str,
+                                                         Dict[str, float]]:
         """Model metrics evaluation.
 
         Args:
           corpus: Corpus/Dataset to evaluate model.
-          extensive_evaluation: bool = False
             
         Returns:
           Model evaluation metrics.
@@ -289,8 +287,7 @@ class Model(Template):
             del y_pred
             
             return model_performance(y_true.get_tags(), 
-                                     y_pred_converted,
-                                     extensive_evaluation=extensive_evaluation)
+                                     y_pred_converted)
         
         if not isinstance(corpus, Dataset):
             prediction = self.model.predict(corpus.train)
@@ -305,7 +302,7 @@ class Model(Template):
                 output['test'] = _eval(corpus.test, prediction)
         else: 
             prediction = self.model.predict(corpus)
-            output = _eval(corpus.train, prediction)
+            output = _eval(corpus, prediction)
             
         return output
 

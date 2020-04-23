@@ -6,14 +6,12 @@ from sklearn.metrics import f1_score, accuracy_score
 
 
 def model_performance(y_true: List[List[str]],
-                      y_pred: List[List[str]],
-                      extensive_evaluation: bool = False) -> Dict[str, float]:
+                      y_pred: List[List[str]]) -> Dict[str, float]:
     """Accuracy calculation function
     
     Args:
       y_true: List of true labels of the tokenized sentese.
       y_pred: List of predicted labels of the tokenized sentese.
-      extensive_evaluation: Use extensive set of metrics.
       
     Returns:
       Dict of metrics:
