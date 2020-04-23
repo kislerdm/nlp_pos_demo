@@ -12,8 +12,7 @@ WORKDIR /app
 # copy the service
 # to be modified to "COPY . ." if using ci/cd 
 # with the prior step of copying framework to the service dir, or artifacts
-COPY service/train train
-COPY service/serve serve
+COPY service .
 COPY framework framework
 
 # model version
@@ -23,19 +22,29 @@ ARG PATH_MISC="framework/tagger_framework/tagger/pos/${MODEL_VERSION}/install_de
 
 RUN pip install --upgrade pip \
   # install os dependencies if required by the model's py requirements
-  && if [ -f ${PATH_MISC} ]; then chmod +x ${PATH_MISC} && ./${PATH_MISC}; fi \
+  && if [ -f ${PATH_MISC} ]; then chmod +x ${PATH_MISC} && ./${PATH_MISC} train; fi \
   # install custom packages and dependencies
   && pip install --no-cache-dir pytest ./framework/ \
   # test the model modules
   && pytest -W ignore -vv framework/tests
 
 ENV BUCKET_DATA=/app/framework/tests/data
+ENV BUCKET_DATA_EVAL=${BUCKET_DATA}
 ENV BUCKET_DATA_INPUT=${BUCKET_DATA}/prediction
 ENV BUCKET_DATA_OUTPUT=${BUCKET_DATA_INPUT}
 ENV BUCKET_MODEL=/model
 
-RUN echo "import json; import os; model=os.getenv('MODEL_VERSION'); path=os.getenv('BUCKET_DATA_OUTPUT');" > validate.py \
-  && echo "prediction = json.load(open(f'{path}/prediction.json', 'r')); assert prediction[0]['upos'] == ['NOUN'], f'Model {model} failed validation!';" >> validate.py
+# this is kind of ugly.. better than no tests though :)
+RUN echo "import json; import os; model=os.getenv('MODEL_VERSION'); path=os.getenv('BUCKET_DATA_OUTPUT');" > validate_prediction.py \
+  && echo "prediction = json.load(open(f'{path}/prediction.json', 'r')); assert prediction[0]['upos'] == ['NOUN'], f'Model {model} failed validation!';" >> validate_prediction.py
+
+RUN echo "import json; import os; model=os.getenv('MODEL_VERSION'); dir=os.getenv('BUCKET_MODEL'); path=f'{dir}/{model}'" > validate_evaluation.py \
+  && echo "evaluation = json.load(open(f'{path}/{os.listdir(path)[0]}', 'r'))" >> validate_evaluation.py \
+  && echo "assert evaluation['meta']['model']['version'] == model, f'Model {model} evaluation failed (meta: model version)!'" >> validate_evaluation.py \
+  && echo "assert evaluation['meta']['data']['relative_path'] == 'test.conllu', f'Model {model} evaluation failed (meta: data path)!'" >> validate_evaluation.py \
+  && echo "assert evaluation['meta']['data']['volume']['sentences_count'] == 1, f'Model {model} evaluation failed (meta: data volume, sentences)!'" >> validate_evaluation.py \
+  && echo "assert evaluation['meta']['data']['volume']['tags_count'] == 1, f'Model {model} evaluation failed (meta: data volume, tags)!'" >> validate_evaluation.py \
+  && echo "assert round(evaluation['accuracy'], 1) == 1., f'Model {model} evaluation failed (accuracy)!'" >> validate_evaluation.py 
 
 # test model v3
 RUN python train/runner.py \
@@ -50,7 +59,14 @@ RUN python train/runner.py \
     --path-input test.txt \
     --path-output prediction.json \
 # validate prediction  
-  && python validate.py
+  && python validate_prediction.py \
+# evaluate model
+  && python evaluate/runner.py \
+    --path-model ${MODEL_VERSION}_test.pt \
+    --path-input test.conllu \
+    --dir-output ${BUCKET_MODEL}/${MODEL_VERSION} \
+# validate eval
+  && python validate_evaluation.py
 
 # test v2
 ENV MODEL_VERSION="v2"
@@ -66,7 +82,14 @@ RUN python train/runner.py \
     --path-input test.txt \
     --path-output prediction.json \
 # validate prediction  
-  && python validate.py
+  && python validate_prediction.py \
+# evaluate model
+  && python evaluate/runner.py \
+    --path-model ${MODEL_VERSION}_test.pt \
+    --path-input test.conllu \
+    --dir-output ${BUCKET_MODEL}/${MODEL_VERSION} \
+# validate eval
+  && python validate_evaluation.py
 
 # test v1
 ENV MODEL_VERSION="v1"
@@ -82,4 +105,11 @@ RUN python train/runner.py \
     --path-input test.txt \
     --path-output prediction.json \
 # validate prediction  
-  && python validate.py
+  && python validate_prediction.py \
+# evaluate model
+  && python evaluate/runner.py \
+    --path-model ${MODEL_VERSION}_test.pt \
+    --path-input test.conllu \
+    --dir-output ${BUCKET_MODEL}/${MODEL_VERSION} \
+  # validate eval
+  && python validate_evaluation.py
