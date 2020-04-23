@@ -68,7 +68,21 @@ RAM: 8GB 1867MHz (DDR3)
 
 Model v3 has noticeable accuracy improvement of over compared to the model v2 (I'd question the accuracy of 1.0, even though  was used to compute the metrics). The improvements however come at the price of model complexity, hence its high size and computation power requirements as well as higher maintenance costs (in terms of human hours). These factors must be taken to account for projects risks assessment. One should carefully assess if higher model performance (in terms of accuracy, or other prediction quality metric) brings enough business value to be worth development time and extra operational costs.
 
-## Framedwork runner application
+## PoS Framework
+
+One of the set project's objectives is, to illustrate real-life approach one can take to build a flexible and extendable base for NLP services. A python package/framework is proposed. See details in [the package documentation](./app/framework/README.md).
+
+## Framework runner application
+
+The framework is operated by the runner application which include three services:
+
+- train: the service to train a model defined in the framework with the use of [conllu](https://universaldependencies.org/format.html) data sets. **!Note!** train and dev sets are required.
+- evaluate: the service to evalute the model using conllu data set, i.e. test data set.
+- serve: the service to run prediction using (pre-)trained models (defined in the framework/package) given the file of tokenized sentences.  **!Note!** one sentence per line, tokens separated by "space".
+
+*Every service is dockerized and can be deployd to k8s cluster, or as a AWS Fargate, or GCP Cloud Run service.*
+
+The services are operated with a help of the bash routing/triggering scripts [./run.sh](./run.sh) and [runner.sh](./app/service/runner.sh).
 
 ### Requirements
 
