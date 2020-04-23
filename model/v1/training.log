@@ -1,0 +1,27 @@
+2020-04-22 20:15:42.967 [INFO ] [service/train/v1] Init.
+2020-04-22 20:15:44.086 [INFO ] [service/train/v1] Reading data and building corpus.
+2020-04-22 20:15:45.502 [INFO ] [service/train/v1] Defining the model.
+2020-04-22 20:15:45.507 [INFO ] [service/train/v1] Start model training.
+2020-04-22 20:15:49.019 [INFO ] [service/train/v1] Training completed. Elapsed time 3.51 sec.
+2020-04-22 20:15:49.020 [INFO ] [service/train/v1] Model score:
+{
+  "train": {
+    "accuracy": 0.5221330275229358,
+    "f1_micro": 0.5221330275229358,
+    "f1_macro": 0.38634727886202297,
+    "f1_weighted": 0.4732954069400854
+  },
+  "dev": {
+    "accuracy": 0.5388315269672289,
+    "f1_micro": 0.5388315269672289,
+    "f1_macro": 0.38474140644524296,
+    "f1_weighted": 0.48794378870557026
+  },
+  "test": {
+    "accuracy": 0.5403165033911078,
+    "f1_micro": 0.5403165033911078,
+    "f1_macro": 0.3882471826600896,
+    "f1_weighted": 0.4867607976410461
+  }
+}
+2020-04-22 20:15:49.023 [INFO ] [service/train/v1] Saving model to /model/v1/v1.pt

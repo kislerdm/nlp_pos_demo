@@ -734,4 +734,4 @@ X          tp: 11 - fp: 7 - fn: 22 - tn: 11 - precision: 0.6111 - recall: 0.3333
 model_eval(dataset='train', accuracy=1.0)
 model_eval(dataset='dev', accuracy=1.0)
 model_eval(dataset='test', accuracy=1.0)
-2020-04-21 17:48:55.525 [INFO ] [service/train/v3] Saving model to /home/dkisler/projects/assessment_back_ml_eng/model/v3/2020/04/21/v3_20200421T15481587480535Z.pt
+2020-04-21 17:48:55.525 [INFO ] [service/train/v3] Saving model to /model/v3/v3.pt

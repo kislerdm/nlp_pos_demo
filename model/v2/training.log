@@ -24,4 +24,4 @@
     "f1_weighted": 0.8349044937036907
   }
 }
-2020-04-22 02:46:23.907 [INFO ] [service/train/v2] Saving model to /Users/dkisler/projects/assessment_back_ml_eng/model/v2/2020/04/22/v2_20200422T00461587512783Z.pt
+2020-04-22 02:46:23.907 [INFO ] [service/train/v2] Saving model to /model/v2/v2.pt
