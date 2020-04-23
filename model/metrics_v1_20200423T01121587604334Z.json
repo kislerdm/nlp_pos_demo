@@ -1,0 +1,1 @@
+{"accuracy": 0.5403165033911078, "f1_micro": 0.5403165033911078, "f1_macro": 0.3882471826600896, "f1_weighted": 0.4867607976410461, "meta": {"model": {"version": "v1", "framework_version": "1.0.0"}, "data": {"relative_path": "UD_English-GUM/en_gum-ud-test.conllu", "volume": {"sentences_count": 890, "tags_count": 15924}}}}

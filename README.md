@@ -69,7 +69,7 @@ CPU: Intel Core i5
 RAM: 8GB 1867MHz (DDR3)
 ```
 
-## Application run instructions
+## RunnerA pplication
 
 ### Requirements
 
@@ -234,7 +234,54 @@ The resulting model is expected to be found in [`./model/v1.pt`](./model/v1.pt).
 
 The model prediction results file is expected to be found in [`./data/prediction/output/test.json`](./data/prediction/output/test.json).
 
+
+***Example***: run model v1 evaluation using *test* data set.
+
+```bash
+./run.sh evaluate v1 \
+--path-model v1.pt \
+--path-input UD_English-GUM/en_gum-ud-test.conllu \
+--dir-output .
+```
+
+*Expected stdout logs*:
+
+```bash
+2020-04-23 01:12:13.432 [INFO ] [service/evaluate/v1] Loading the model.
+2020-04-23 01:12:13.449 [INFO ] [service/evaluate/v1] Reading data and preparing dataset.
+2020-04-23 01:12:13.705 [INFO ] [service/evaluate/v1] Starting model performance evaluation.
+2020-04-23 01:12:14.378 [INFO ] [service/evaluate/v1] Writing evaluation results to /model/.
+2020-04-23 01:12:14.394 [INFO ] [service/evaluate/v1] Model evaluation completed. Elapsed time 0.96 sec.
+```
+
+The evaluation results file when running above command is expected to be found in [`./model/`](./model/metrics_v1_20200423T01121587604334Z.json).
+
+The evaluation format:
+
+```json
+{
+  "accuracy": 0.5403165033911078,
+  "f1_micro": 0.5403165033911078,
+  "f1_macro": 0.3882471826600896,
+  "f1_weighted": 0.4867607976410461,
+  "meta": {
+    "model": {
+      "version": "v1",
+      "framework_version": "1.0.0"
+    },
+    "data": {
+      "relative_path": "UD_English-GUM/en_gum-ud-test.conllu",
+      "volume": {
+        "sentences_count": 890,
+        "tags_count": 15924
+      }
+    }
+  }
+}
+```
+
 **!Note!** 
+
 ```yaml
 The path is relative:
   model: "to the ./model directory"
@@ -243,4 +290,5 @@ The path is relative:
     serve: 
       input: "to the ./data/prediction/input directory"
       output: "to the ./data/prediction/output directory"
+    evaluate: "to the ./data directory"
 ```
