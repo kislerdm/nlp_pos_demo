@@ -45,23 +45,18 @@ As the **v3** model base, a pre-trainned tagger [**'pos-fast'**](https://github.
 
 ## Accuracy comparison
 
-|Model version|train|dev|test|
-|-|-:|-:|-:|
-|v1 (rule-based tagger)|0.522|0.539|0.540|
-|v2 (1-gram tagger)|0.940|0.851|0.840|
-|v3 (DNN tagger)|0.970|0.969|0.932|
+|Model                 |Accuracy|F1 score (weighted)|Training time [s]|Size [bytes]|Prediction time [s] (*)|
+|:-                    |      -:|                 -:|               -:|          -:|                     -:|
+|v1 (rule-based tagger)|    0.54|               0.49|            ~ 3.5|         835|                  < 0.7|
+|v2 (1-gram tagger)    |    0.84|               0.83|            ~ 1.7|      221803|                  ~ 0.3|
+|v3 (DNN tagger)       |   ~ 1.0|              ~ 1.0|           ~ 3670|    75183392|                   > 50|
 
-### Trade-off
+**!Note!** Model predictive performance metrics were evaluated using the [sklearn.metrics](https://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics) based [function](./app/framework/tagger_framework/tagger/pos/evaluation.py) on the [train data set](./data/UD_English-GUM/en_gum-ud-train.conllu).
 
-Model v3 has noticeable of accuracy improvement of *~0.1* compared to the model v2, it also demonstrates lower level level of overfitting to the test sample. The improvements however come at the price of model complexity, hence its high size and computation power requirements as well as higher maintenance costs (in terms of human hours). These factors must be taken to account for projects risks assessment. One should carefully assess if higher model performance (in terms of accuracy, or other prediction quality metric) brings enough business value to be worth development time and extra operational costs.
+**!Note!** (*) The time required to run prediction was measured during models evaluation, ergo the numbers cannot be taken as the proper benchmark, but rather as a qualitative comparison. The time measured on 5yo machine with the specs:
 
-|Model|Size [bytes]|Prediction time [ms] (*)|
-|-|-:|-:|
-|v1|      835||
-|v2|   221803||
-|v3| 75183392||
+**!Note!** The **v3** model was trained for 41 epochs (with limit set to 100) with learning rate annealing by the factor of 0.5 after every 2nd epoch with no loss improvement.
 
-(*) Evaluation was performed on a 5-yo machine:
 
 ```yaml
 OS: MacOS Mojave
@@ -69,7 +64,11 @@ CPU: Intel Core i5
 RAM: 8GB 1867MHz (DDR3)
 ```
 
-## RunnerA pplication
+### Trade-off
+
+Model v3 has noticeable accuracy improvement of over compared to the model v2 (I'd question the accuracy of 1.0, even though  was used to compute the metrics). The improvements however come at the price of model complexity, hence its high size and computation power requirements as well as higher maintenance costs (in terms of human hours). These factors must be taken to account for projects risks assessment. One should carefully assess if higher model performance (in terms of accuracy, or other prediction quality metric) brings enough business value to be worth development time and extra operational costs.
+
+## Framedwork runner application
 
 ### Requirements
 
@@ -174,7 +173,7 @@ where
   --path-train en_gum-ud-train.conllu \
   --path-dev en_gum-ud-dev.conllu \
   --path-test en_gum-ud-test.conllu \
-  --path-model-out v1.pt
+  --path-model-out v1/v1.pt
 ```
 
 *Expected stdout logs*:
@@ -206,7 +205,7 @@ where
     "f1_weighted": 0.4867607976410461
   }
 }
-2020-04-22 20:15:49.023 [INFO ] [service/train/v1] Saving model to /model/v1.pt
+2020-04-22 20:15:49.023 [INFO ] [service/train/v1] Saving model to /model/v1/v1.pt
 ```
 
 The resulting model is expected to be found in [`./model/v1.pt`](./model/v1.pt).
@@ -215,7 +214,7 @@ The resulting model is expected to be found in [`./model/v1.pt`](./model/v1.pt).
 
 ```bash
 ./run.sh serve v1 \
-  --path-model v1.pt \
+  --path-model v1/v1.pt \
   --path-input test.txt \
   --path-output test.json
 ```
@@ -228,20 +227,38 @@ The resulting model is expected to be found in [`./model/v1.pt`](./model/v1.pt).
 2020-04-22 20:16:47.247 [INFO ] [service/serve/v1] Prepare/tokenize data.
 2020-04-22 20:16:47.249 [INFO ] [service/serve/v1] Run prediction.
 2020-04-22 20:16:47.250 [INFO ] [service/serve/v1] Convert prediction to output format.
-2020-04-22 20:16:47.251 [INFO ] [service/serve/v1] Write prediction results to /data_prediction/output/test.json
+2020-04-22 20:16:47.251 [INFO ] [service/serve/v1] Write prediction results to /data_prediction/test.json
 2020-04-22 20:16:47.271 [INFO ] [service/serve/v1] Prediction completed. Elapsed time 0.05 sec.
 ```
 
 The model prediction results file is expected to be found in [`./data/prediction/output/test.json`](./data/prediction/output/test.json).
 
+The serve/prediction service output format:
+
+```js
+[
+  {
+    "form": List[String],
+    "upos": List[String],
+  },
+  {
+    "form": List[String],
+    "upos": List[String],
+  },...,
+  {
+    "form": List[String],
+    "upos": List[String],
+  },
+]
+```
 
 ***Example***: run model v1 evaluation using *test* data set.
 
 ```bash
 ./run.sh evaluate v1 \
---path-model v1.pt \
+--path-model v1/v1.pt \
 --path-input UD_English-GUM/en_gum-ud-test.conllu \
---dir-output .
+--dir-output v1
 ```
 
 *Expected stdout logs*:
@@ -250,13 +267,13 @@ The model prediction results file is expected to be found in [`./data/prediction
 2020-04-23 01:12:13.432 [INFO ] [service/evaluate/v1] Loading the model.
 2020-04-23 01:12:13.449 [INFO ] [service/evaluate/v1] Reading data and preparing dataset.
 2020-04-23 01:12:13.705 [INFO ] [service/evaluate/v1] Starting model performance evaluation.
-2020-04-23 01:12:14.378 [INFO ] [service/evaluate/v1] Writing evaluation results to /model/.
+2020-04-23 01:12:14.378 [INFO ] [service/evaluate/v1] Writing evaluation results to /model/v1.
 2020-04-23 01:12:14.394 [INFO ] [service/evaluate/v1] Model evaluation completed. Elapsed time 0.96 sec.
 ```
 
-The evaluation results file when running above command is expected to be found in [`./model/`](./model/metrics_v1_20200423T01121587604334Z.json).
+The evaluation results file when running above command is expected to be found in [`./model/v1/`](./model/v1/metrics_v1_20200423T01121587604334Z.json).
 
-The evaluation format:
+The evaluation service output format:
 
 ```json
 {
