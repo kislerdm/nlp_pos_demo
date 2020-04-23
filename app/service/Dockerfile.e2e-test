@@ -64,7 +64,7 @@ RUN python train/runner.py \
   && python evaluate/runner.py \
     --path-model ${MODEL_VERSION}_test.pt \
     --path-input test.conllu \
-    --dir-output ${BUCKET_MODEL}/${MODEL_VERSION} \
+    --dir-output ${MODEL_VERSION} \
 # validate eval
   && python validate_evaluation.py
 
@@ -87,7 +87,7 @@ RUN python train/runner.py \
   && python evaluate/runner.py \
     --path-model ${MODEL_VERSION}_test.pt \
     --path-input test.conllu \
-    --dir-output ${BUCKET_MODEL}/${MODEL_VERSION} \
+    --dir-output ${MODEL_VERSION} \
 # validate eval
   && python validate_evaluation.py
 
@@ -110,6 +110,6 @@ RUN python train/runner.py \
   && python evaluate/runner.py \
     --path-model ${MODEL_VERSION}_test.pt \
     --path-input test.conllu \
-    --dir-output ${BUCKET_MODEL}/${MODEL_VERSION} \
+    --dir-output ${MODEL_VERSION} \
   # validate eval
   && python validate_evaluation.py
