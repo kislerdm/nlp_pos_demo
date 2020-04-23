@@ -85,8 +85,7 @@ if __name__ == "__main__":
 
     # link the model module
     try:
-        model_definition = importlib.import_module(
-            f"{MODEL_PKG_NAME}.{MODEL_VERSION}.model")
+        model_definition = importlib.import_module(f"{MODEL_PKG_NAME}.{MODEL_VERSION}.model")
     except Exception as ex:
         logs.send(f"Model {MODEL_VERSION} is not defined in the package {MODEL_PKG_NAME}.\nError:{ex}",
                   lineno=logs.get_line(),
@@ -116,7 +115,6 @@ if __name__ == "__main__":
                   lineno=logs.get_line(),
                   kill=True)
     
-    # sys.exit(0)
     logs.send("Read the input data.", is_error=False, kill=False)
 
     data_in_str, err = corpus_reader(path_data_in)
