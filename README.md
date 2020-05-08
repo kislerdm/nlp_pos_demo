@@ -1,5 +1,7 @@
 # PoS Tagger for English Words based on the Georgetown University Multilayer Corpus
 
+![logo](./logo.jpg)
+
 ## Goal
 
 To build a Part-of-Speech tagger using [Georgetown University Multilayer Corpus](https://github.com/UniversalDependencies/UD_English-GUM/tree/master).
