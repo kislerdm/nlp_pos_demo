@@ -125,13 +125,13 @@ see [here](https://git-lfs.github.com/)
 Please clone the repo to run the app (**!Note!** [git-lfs](https://git-lfs.github.com/) must be installed):
 
 ```bash
-git clone git@github.com:kislerdm/assessment_back_ml_eng.git . --recursive
+git clone git@github.com:kislerdm/nlp_pos_demo.git . --recursive
 ```
 
 or (over HTTP)
 
 ```bash
-git clone https://github.com/kislerdm/assessment_back_ml_eng.git . --recursive
+git clone https://github.com/kislerdm/nlp_pos_demo.git . --recursive
 ```
 
 ### Run instructions
