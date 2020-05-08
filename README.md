@@ -1,7 +1,5 @@
 # PoS Tagger for English Words based on the Georgetown University Multilayer Corpus
 
-Assessment task for the position of ML Engineer @BackHQ. The original description can be found [here](./docu/Machine%20Learning%20Challenge%20-%20Back.pdf).
-
 ## Goal
 
 To build a Part-of-Speech tagger using [Georgetown University Multilayer Corpus](https://github.com/UniversalDependencies/UD_English-GUM/tree/master).
